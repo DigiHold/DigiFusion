@@ -1,0 +1,82 @@
+html :where(.editor-styles-wrapper) {
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+        Oxygen-Sans, Ubuntu, Cantarell, Helvetica Neue, sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.625;
+    color: var(--digi-dark-gray);
+}
+
+body {
+    b,
+    strong {
+        color: var(--digi-dark-blue);
+    }
+}
+
+.editor-styles-wrapper {
+    position: relative;
+}
+
+.wp-block-group {
+    border: 1px solid rgba(240, 240, 240, 1) !important;
+    padding: 8px;
+    margin: 8px;
+}
+.block-library-spacer__resize-container {
+    background: rgba(gray, 0.5);
+}
+
+.wp-block-spacer {
+    background-color: rgba(240, 240, 240, 1);
+}
+
+.wp-block-columns {
+    padding: 20px;
+    border: 2px dotted rgba(0, 0, 0, 0.1);
+    background-color: rgba(250, 250, 250, 0.35);
+    .wp-block-column {
+        padding: 20px;
+        border: 2px dotted rgba(0, 0, 0, 0.1);
+        background-color: rgba(250, 250, 250, 0.35);
+    }
+}
+/* FROM HERE CUSTOM*/
+.wrapper {
+    @apply max-w-[90%] mx-auto;
+}
+
+@media (min-width: 1280px) {
+    .wrapper {
+        @apply max-w-[1200px];
+    }
+}
+
+.wp-block-digi-spacer {
+    @apply bg-[#f0f0f0];
+
+    &.space-sm {
+        @apply h-10 md:h-16;
+    }
+
+    &.space-md {
+        @apply h-14 md:h-20;
+    }
+
+    &.space-lg {
+        @apply h-14 md:h-28;
+    }
+}
+
+.light-orange {
+    @apply bg-light-orange-bg overflow-hidden;
+}
+
+.ribbon {
+    transform: rotate(45deg);
+    box-sizing: border-box;
+}
+
+/* Fix grid class conflict with Rank Math SEO */
+body .grid {
+    display: grid;
+}

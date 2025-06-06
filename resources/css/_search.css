@@ -1,0 +1,51 @@
+.digi-search-results {
+    padding: 2rem 0;
+}
+
+.digi-search-item {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #ccc;
+    color: var(--digi-charcoal);
+    text-decoration: none;
+}
+
+.digi-search-item:hover {
+    color: var(--digi-crimson);
+}
+
+.digi-no-results {
+    padding: 2rem 0;
+}
+
+.digi-search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.digi-search-label {
+    flex: 1;
+}
+
+.digi-search-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+}
+
+.digi-search-submit {
+    padding: 0.75rem 1rem;
+    background-color: var(--digi-crimson);
+    color: #fff;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.digi-search-submit:hover {
+    background-color: var(--digi-ruby);
+}

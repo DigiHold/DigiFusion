@@ -1,0 +1,43 @@
+{
+    "version": 1,
+    "settings": {
+        "layout": {
+            "contentSize": "1200px",
+            "wideSize": "90%"
+        },
+        "color": {
+            "palette": [
+                {
+                    "name": "Crimson",
+                    "slug": "crimson",
+                    "color": "#e74c3c"
+                },
+                {
+                    "name": "Ruby",
+                    "slug": "ruby",
+                    "color": "#c0392b"
+                },
+                {
+                    "name": "Yellow",
+                    "slug": "yellow",
+                    "color": "#ffd83b"
+                },
+                {
+                    "name": "Charcoal",
+                    "slug": "charcoal",
+                    "color": "#2c3e50"
+                },
+                {
+                    "name": "Slate",
+                    "slug": "slate",
+                    "color": "#34495e"
+                },
+                {
+                    "name": "Silver",
+                    "slug": "silver",
+                    "color": "#ecf0f1"
+                }
+            ]
+        }
+    }
+}

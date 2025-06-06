@@ -1,0 +1,35 @@
+.digi-error-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px 0;
+}
+
+.digi-error-title {
+    font-size: 5rem;
+    line-height: 1;
+    margin: 0;
+}
+
+.digi-error-divider {
+    display: flex;
+    justify-content: flex-start;
+    width: 200px;
+    height: 2px;
+    background-color: var(--digi-crimson);
+    border: none;
+    border-radius: 0.125rem;
+    margin: 2rem 0;
+}
+
+.digi-error-message {
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+.digi-error-action {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+}

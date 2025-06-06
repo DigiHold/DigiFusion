@@ -1,0 +1,303 @@
+.digifusion-builder-type-wrap {
+    padding: 10px 0;
+}
+.digifusion-builder-type-option {
+    cursor: pointer;
+    display: block;
+    font-weight: 500;
+}
+.digifusion-builder-type-option input[type="radio"] {
+    margin-right: 8px;
+}
+.digifusion-builder-type-option:hover {
+    color: #0073aa;
+}
+.digifusion-builder-settings-wrap {
+    padding: 15px 0;
+}
+.digifusion-setting-row {
+    border-bottom: 1px solid #f0f0f1;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+}
+.digifusion-setting-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.digifusion-setting-label {
+    cursor: pointer;
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.digifusion-setting-label input[type="checkbox"] {
+    margin-right: 8px;
+}
+.digifusion-hook-info {
+    background: #e7f3ff;
+    border: 1px solid #72aee6;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-top: 10px;
+    padding: 10px;
+}
+.digifusion-builder-notices {
+    margin-top: 15px;
+}
+.digifusion-notice {
+    background: #f0f6fc;
+    border-left: 4px solid #72aee6;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+}
+.digifusion-notice p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+.digifusion-warning {
+    background: #fcf9e8;
+    border-left-color: #dba617;
+    color: #646970;
+}
+.digifusion-display-rules-wrap {
+    padding: 15px 0;
+}
+.digifusion-display-controls {
+    border-bottom: 1px solid #f0f0f1;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+}
+.digifusion-display-controls h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    margin-top: 0;
+}
+.digifusion-display-option {
+    cursor: pointer;
+    display: block;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+.digifusion-display-option input[type="radio"] {
+    margin-right: 8px;
+}
+.digifusion-rules-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+.digifusion-rules-section h4 {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    padding: 15px 20px 10px;
+}
+.digifusion-rules-section .description {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e5e9;
+    color: #646970;
+    font-size: 13px;
+    margin: 0;
+    padding: 0 20px 15px;
+}
+.digifusion-rules-list {
+    min-height: 50px;
+    padding: 15px 20px;
+}
+.digifusion-no-rules p {
+    color: #646970;
+    font-style: italic;
+    margin: 0;
+    padding: 20px 0;
+    text-align: center;
+}
+.digifusion-rule-item {
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 10px 15px;
+}
+.digifusion-rule-item:last-child {
+    margin-bottom: 0;
+}
+.digifusion-rule-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+}
+.digifusion-remove-rule {
+    border-radius: 2px;
+    color: #d63638;
+    padding: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+.digifusion-remove-rule:hover {
+    background: #d63638;
+    color: #fff;
+}
+.digifusion-remove-rule .dashicons {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+}
+.digifusion-add-rule {
+    background: #f8f9fa;
+    border-top: 1px solid #e1e5e9;
+    padding: 15px 20px;
+}
+.digifusion-quick-add {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.digifusion-quick-add label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+.digifusion-quick-add-select {
+    flex: 1;
+    min-width: 250px;
+}
+.digifusion-add-quick-rule {
+    white-space: nowrap;
+}
+.digifusion-advanced-rules {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.digifusion-advanced-rules summary {
+    align-items: center;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    display: flex;
+    font-weight: 600;
+    gap: 8px;
+    list-style: none;
+    padding: 12px 15px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+.digifusion-advanced-rules summary::-webkit-details-marker {
+    display: none;
+}
+.digifusion-advanced-rules summary:before {
+    content: "▶";
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+.digifusion-advanced-rules[open] summary:before {
+    transform: rotate(90deg);
+}
+.digifusion-advanced-rules summary:hover {
+    background: #e8f0fe;
+}
+.digifusion-advanced-content {
+    background: #fff;
+    padding: 20px 15px;
+}
+.digifusion-rule-builder {
+    align-items: center;
+    display: grid;
+    gap: 10px 15px;
+    grid-template-columns: auto 1fr;
+    max-width: 600px;
+}
+.digifusion-rule-builder label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+.digifusion-rule-builder select {
+    width: 100%;
+}
+.digifusion-add-advanced-rule {
+    grid-column: 1/-1;
+    justify-self: start;
+    margin-top: 10px;
+}
+.digifusion-fixed-location-notice {
+    background: #f0f6fc;
+    border: 1px solid #72aee6;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+}
+.digifusion-fixed-location-notice p {
+    color: #1e1e1e;
+    font-size: 14px;
+    margin: 0;
+}
+@media (max-width: 782px) {
+    .digifusion-quick-add {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .digifusion-quick-add label {
+        margin-bottom: 5px;
+    }
+    .digifusion-quick-add-select {
+        margin-bottom: 10px;
+        min-width: auto;
+    }
+    .digifusion-rule-builder {
+        gap: 10px;
+        grid-template-columns: 1fr;
+    }
+    .digifusion-rule-builder label {
+        margin-bottom: 5px;
+    }
+    .digifusion-rule-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .digifusion-remove-rule {
+        align-self: flex-end;
+    }
+}
+.digifusion-builder-type-option:focus-within,
+.digifusion-display-option:focus-within {
+    outline: 2px solid #005cee;
+    outline-offset: 2px;
+}
+input[type="checkbox"]:focus,
+input[type="radio"]:focus,
+select:focus {
+    outline: 2px solid #005cee;
+    outline-offset: 1px;
+}
+.button:focus {
+    box-shadow: 0 0 0 2px #005cee;
+}
+.digifusion-rule-item {
+    transition: all 0.2s ease;
+}
+.digifusion-rule-item:hover {
+    border-color: #72aee6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.digifusion-rule-value:disabled {
+    background-color: #f6f7f7;
+    color: #50575e;
+}
+.digifusion-add-advanced-rule:disabled,
+.digifusion-add-quick-rule:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

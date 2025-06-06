@@ -1,0 +1,41 @@
+button.digi,
+input[type="submit"] {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: var(--digi-crimson);
+    color: #fff;
+    border: 0;
+    overflow: hidden;
+    transition: all 300ms ease-in-out;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--digi-ruby);
+        color: #fff;
+    }
+
+    svg {
+        fill: currentColor;
+        z-index: 10;
+        transition: all 300ms ease-in-out;
+    }
+
+    .text {
+        position: relative;
+        z-index: 10;
+    }
+}
+
+button {
+    border: 0;
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
