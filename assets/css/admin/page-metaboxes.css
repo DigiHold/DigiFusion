@@ -1,0 +1,248 @@
+/* DigiFusion Page Settings Metaboxes Styles */
+
+.digifusion-page-settings-wrap {
+    background: #fff;
+}
+
+/* Panel Styles */
+
+.digifusion-panel {
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+.digifusion-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 12px 15px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+}
+
+.digifusion-panel-title:hover {
+    background: #f0f0f0;
+}
+
+.digifusion-panel-title .dashicons {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+.digifusion-panel-title .digifusion-panel-toggle {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.digifusion-panel-content {
+    display: none;
+    padding: 15px;
+}
+
+.digifusion-panel-content .form-table {
+    margin: 0;
+}
+
+.digifusion-panel-content .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    font-weight: 600;
+}
+
+.digifusion-panel-content .form-table td {
+    padding: 15px 0;
+}
+
+/* Toggle Switch Styles */
+
+.digifusion-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.digifusion-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.digifusion-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.digifusion-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.digifusion-toggle-switch input:checked + .digifusion-toggle-slider {
+    background-color: #2196f3;
+}
+
+.digifusion-toggle-switch input:focus + .digifusion-toggle-slider {
+    box-shadow: 0 0 1px #2196f3;
+}
+
+.digifusion-toggle-switch input:checked + .digifusion-toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* Logo Upload Styles */
+
+.digifusion-logo-upload {
+    max-width: 300px;
+}
+
+.digifusion-logo-preview {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.digifusion-logo-preview:empty {
+    display: none;
+}
+
+.digifusion-logo-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.digifusion-logo-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.digifusion-upload-logo {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.digifusion-upload-logo:hover {
+    background: #005a87;
+}
+
+.digifusion-remove-logo {
+    background: #dc3232;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.digifusion-remove-logo:hover {
+    background: #a02622;
+}
+
+/* Color picker */
+
+.digifusion-color-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.digifusion-color-field label {
+        min-width: 100px;
+    }
+
+/* Responsive Design */
+
+@media (max-width: 782px) {
+    .digifusion-panel-content .form-table th,
+    .digifusion-panel-content .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    .digifusion-panel-content .form-table th {
+        padding-bottom: 5px;
+    }
+
+    .digifusion-logo-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Form Enhancements */
+
+.digifusion-panel-content input[type="text"],
+.digifusion-panel-content textarea,
+.digifusion-panel-content select {
+    width: 100%;
+    max-width: 400px;
+}
+
+.digifusion-panel-content textarea {
+    resize: vertical;
+}
+
+.digifusion-panel-content .description {
+    margin-top: 5px;
+    font-style: italic;
+    color: #666;
+}
+
+/* Loading States */
+
+.digifusion-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Error States */
+
+.digifusion-error {
+    border-color: #dc3232;
+    background-color: #fef7f7;
+}
+
+.digifusion-error-message {
+    color: #dc3232;
+    font-size: 12px;
+    margin-top: 5px;
+}

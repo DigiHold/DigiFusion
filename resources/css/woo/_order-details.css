@@ -1,0 +1,16 @@
+.woocommerce ul.order_details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0;
+
+    &::after,
+    &::before {
+        display: none;
+    }
+
+    li {
+        padding-right: 1rem;
+        margin: 0;
+    }
+}

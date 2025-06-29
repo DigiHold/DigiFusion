@@ -2,6 +2,130 @@
 Large devices
 --------------------------*/
 @media (max-width: 1024px) {
+    /* Container */
+    .container {
+        max-width: 100%;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    /* Header */
+    .digi-header-nav {
+        display: none;
+        background-color: #fff;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+
+        &.nav-open {
+            display: flex;
+        }
+
+        li {
+            flex-direction: column;
+        }
+
+        a {
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.7rem 1.5rem;
+        }
+
+        .sub-menu {
+            display: none;
+            flex-direction: column;
+            position: relative;
+            top: 0;
+            width: 100%;
+            padding: 0;
+            opacity: 1;
+            visibility: visible;
+            box-shadow: none;
+
+            a {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+
+                .menu-text {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+
+                    &::before {
+                        content: "";
+                        display: inline-flex;
+                        width: 0.75rem;
+                        height: 0.75rem;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'%3E%3Cpath fill='currentColor' d='M273 239c9.4 9.4 9.4 24.6 0 33.9L113 433c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l143-143L79 113c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0L273 239z'/%3E%3C/svg%3E");
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        opacity: 0.7;
+                        transition: opacity 300ms ease-in-out;
+                    }
+                }
+            }
+
+            .sub-menu {
+                left: 0;
+            }
+        }
+
+        li.submenu-open > {
+            .sub-menu {
+                display: flex;
+            }
+        }
+
+        .nav-arrow[aria-expanded="true"] {
+            transform: rotate(180deg);
+        }
+
+        .nav-arrow {
+            width: 2rem;
+            height: 2rem;
+
+            svg {
+                width: 1.2rem;
+                height: 1.2rem;
+            }
+        }
+
+        .sub-menu > .menu-item-has-children .nav-arrow svg {
+            transform: rotate(90deg);
+        }
+    }
+
+    .digi-nav-menu {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+
+    .digi-menu-toggle {
+        display: flex;
+    }
+
+    /* Page Header */
+    .digi-page-header-content {
+        flex-direction: column;
+    }
+
+    .digi-page-header-title,
+    .digi-breadcrumbs {
+        width: 100%;
+    }
+
+    .digi-page-header-title {
+        text-align: center;
+    }
+
+    .digi-breadcrumbs {
+        justify-content: center;
+    }
+
     /* Footer Grid */
     .digi-footer-grid {
         grid-template-columns: 1fr 1fr 1fr;
@@ -24,6 +148,10 @@ Large devices
         > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
         max-width: 90%;
     }
+}
+
+[dir="rtl"] .digi-header-nav .sub-menu .sub-menu a .menu-text::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'%3E%3Cpath fill='currentColor' d='M47 239c-9.4 9.4-9.4 24.6 0 33.9L207 433c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9L97.9 256 241 113c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L47 239z'/%3E%3C/svg%3E");
 }
 
 /*-------------------------
@@ -155,6 +283,12 @@ Tablets
     .digi-related-posts {
         padding-bottom: 6rem;
         padding-top: 4rem;
+    }
+
+    /* Footer */
+    .site-footer-bottom {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
 

@@ -14,18 +14,13 @@ const {
     __experimentalToggleGroupControl: ToggleGroupControl,
     __experimentalToggleGroupControlOption: ToggleGroupControlOption,
     Panel,
-    PanelBody,
-    PanelRow,
     RangeControl,
     SelectControl,
-    TextControl,
     ToggleControl,
     ColorPicker,
     Popover,
-    TabPanel,
     Icon
 } = wp.components;
-const { MediaUpload } = wp.blockEditor;
 const { useState, useEffect } = wp.element;
 const { editor } = wp;
 
@@ -182,23 +177,176 @@ window.digi.responsiveState = (() => {
 })();
 
 /**
+ * Global Colors Synchronization Manager
+ */
+window.digi.globalColorSync = (() => {
+    let isUpdating = false;
+    
+    /**
+     * Update dependent colors when global colors change
+     * Only updates colors that match the old global color exactly
+     */
+    const updateDependentColors = (globalColorKey, oldColor, newColor) => {
+        if (isUpdating || !window.digifusionCustomizer) return;
+        
+        isUpdating = true;
+        
+        const colorSettings = window.digifusionCustomizer.colorSettings || [];
+        const updatedSettings = {};
+        
+        // Skip global colors setting to avoid infinite loop
+        const filteredSettings = colorSettings.filter(setting => setting !== 'digifusion_global_colors');
+        
+        filteredSettings.forEach(settingId => {
+            const control = wp.customize.control(settingId);
+            if (!control) return;
+            
+            try {
+                const currentValue = control.setting.get();
+                const colors = JSON.parse(currentValue || '{}');
+                let hasChanges = false;
+                
+                // Check each color in this setting
+                Object.keys(colors).forEach(colorKey => {
+                    // Only update if the color exactly matches the old global color
+                    if (colors[colorKey] && colors[colorKey].toLowerCase() === oldColor.toLowerCase()) {
+                        colors[colorKey] = newColor;
+                        hasChanges = true;
+                    }
+                });
+                
+                // Update the setting if changes were made
+                if (hasChanges) {
+                    const newValue = JSON.stringify(colors);
+                    control.setting.set(newValue);
+                    updatedSettings[settingId] = newValue;
+                    
+                    // Trigger a change event to update the control UI
+                    const event = new Event('change');
+                    const input = document.getElementById(`_customize-input-${settingId}`);
+                    if (input) {
+                        input.value = newValue;
+                        input.dispatchEvent(event);
+                    }
+                }
+            } catch (e) {
+                console.warn('Error updating dependent color for setting:', settingId, e);
+            }
+        });
+        
+        isUpdating = false;
+        
+        return updatedSettings;
+    };
+
+    /**
+     * Check if a color is a custom color (doesn't match any current global color)
+     */
+    const isCustomColor = (colorValue) => {
+        if (!window.digifusionCustomizer || !window.digifusionCustomizer.globalColors) return true;
+        
+        const globalColors = Object.values(window.digifusionCustomizer.globalColors);
+        return !globalColors.some(globalColor => 
+            globalColor.toLowerCase() === colorValue.toLowerCase()
+        );
+    };
+
+    /**
+     * Reset all dependent colors that use a specific global color
+     * Preserves custom colors that don't match any global color
+     */
+    const resetDependentColors = (globalColorKey, oldColor, newDefaultColor) => {
+        if (isUpdating || !window.digifusionCustomizer) return;
+        
+        const colorSettings = window.digifusionCustomizer.colorSettings || [];
+        const filteredSettings = colorSettings.filter(setting => setting !== 'digifusion_global_colors');
+        
+        filteredSettings.forEach(settingId => {
+            const control = wp.customize.control(settingId);
+            if (!control) return;
+            
+            try {
+                const currentValue = control.setting.get();
+                const colors = JSON.parse(currentValue || '{}');
+                let hasChanges = false;
+                
+                Object.keys(colors).forEach(colorKey => {
+                    const currentColor = colors[colorKey];
+                    
+                    // Only reset if the color matches the old global color exactly
+                    // This preserves custom colors
+                    if (currentColor && currentColor.toLowerCase() === oldColor.toLowerCase()) {
+                        colors[colorKey] = newDefaultColor;
+                        hasChanges = true;
+                    }
+                });
+                
+                if (hasChanges) {
+                    const newValue = JSON.stringify(colors);
+                    control.setting.set(newValue);
+                    
+                    // Update the control UI
+                    const input = document.getElementById(`_customize-input-${settingId}`);
+                    if (input) {
+                        input.value = newValue;
+                        const event = new Event('change');
+                        input.dispatchEvent(event);
+                    }
+                }
+            } catch (e) {
+                console.warn('Error resetting dependent colors for setting:', settingId, e);
+            }
+        });
+    };
+    
+    /**
+     * Initialize global color sync
+     */
+    const init = () => {
+        // Listen for global colors changes
+        if (wp.customize.control('digifusion_global_colors')) {
+            wp.customize.control('digifusion_global_colors').setting.bind((newValue) => {
+                if (isUpdating) return;
+                
+                try {
+                    const newColors = JSON.parse(newValue || '{}');
+                    const globalColors = window.digifusionCustomizer.globalColors || {};
+                    
+                    // Find which color changed
+                    Object.keys(newColors).forEach(colorKey => {
+                        const oldColor = globalColors[colorKey];
+                        const newColor = newColors[colorKey];
+                        
+                        if (oldColor && newColor && oldColor !== newColor) {
+                            // Update dependent colors
+                            updateDependentColors(colorKey, oldColor, newColor);
+                            
+                            // Update our reference
+                            globalColors[colorKey] = newColor;
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Error processing global colors change:', e);
+                }
+            });
+        }
+    };
+    
+    return {
+        init,
+        updateDependentColors,
+        resetDependentColors,
+        isCustomColor
+    };
+})();
+
+/**
  * Initialize all controls when the Customizer loads
  */
 wp.customize.bind('ready', function() {
-    // Initialize Image Control
-    wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-image') {
-            new DigiFusionImageControl(control);
-        }
-    });
-
-    // Initialize Dimensions Control
-    wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-dimensions') {
-            new DigiFusionDimensionsControl(control);
-        }
-    });
-
+    // Initialize Global Color Sync
+    window.digi.globalColorSync.init();
+    
     // Initialize Range Control
     wp.customize.control.each(function(control) {
         if (control.params.type === 'digifusion-range') {
@@ -213,31 +361,10 @@ wp.customize.bind('ready', function() {
         }
     });
 
-    // Initialize Box Shadow Control
-    wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-box-shadow') {
-            new DigiFusionBoxShadowControl(control);
-        }
-    });
-
-    // Initialize Rich Text Control
-    wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-rich-text') {
-            new DigiFusionRichTextControl(control);
-        }
-    });
-
     // Initialize Toggle Control
     wp.customize.control.each(function(control) {
         if (control.params.type === 'digifusion-toggle') {
             new DigiFusionToggleControl(control);
-        }
-    });
-
-    // Initialize Text Control
-    wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-text') {
-            new DigiFusionTextControl(control);
         }
     });
 
@@ -248,663 +375,13 @@ wp.customize.bind('ready', function() {
         }
     });
 
-    // Initialize Button Group Control
+	// Initialize Typography Control
     wp.customize.control.each(function(control) {
-        if (control.params.type === 'digifusion-button-group') {
-            new DigiFusionButtonGroupControl(control);
+        if (control.params.type === 'digifusion-typography') {
+            new DigiFusionTypographyControl(control);
         }
     });
 });
-
-/**
- * Image Control with Background Settings
- */
-class DigiFusionImageControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-image-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.render();
-    }
-    
-    render() {
-        const ImageComponent = () => {
-            // Keep original state for image URL
-            const [imageUrl, setImageUrl] = useState(this.input.value);
-            
-            // Add state for background settings
-            const [bgPosition, setBgPosition] = useState('center center');
-            const [bgRepeat, setBgRepeat] = useState('no-repeat');
-            const [bgSize, setBgSize] = useState('cover');
-            
-            // Position options
-            const positionOptions = [
-                { value: 'top left', label: __('Top Left', 'digifusion') },
-                { value: 'top center', label: __('Top Center', 'digifusion') },
-                { value: 'top right', label: __('Top Right', 'digifusion') },
-                { value: 'center left', label: __('Center Left', 'digifusion') },
-                { value: 'center center', label: __('Center Center', 'digifusion') },
-                { value: 'center right', label: __('Center Right', 'digifusion') },
-                { value: 'bottom left', label: __('Bottom Left', 'digifusion') },
-                { value: 'bottom center', label: __('Bottom Center', 'digifusion') },
-                { value: 'bottom right', label: __('Bottom Right', 'digifusion') },
-            ];
-            
-            // Repeat options
-            const repeatOptions = [
-                { value: 'no-repeat', label: __('No Repeat', 'digifusion') },
-                { value: 'repeat', label: __('Repeat', 'digifusion') },
-                { value: 'repeat-x', label: __('Repeat Horizontally', 'digifusion') },
-                { value: 'repeat-y', label: __('Repeat Vertically', 'digifusion') },
-            ];
-            
-            // Size options
-            const sizeOptions = [
-                { value: 'cover', label: __('Cover', 'digifusion') },
-                { value: 'contain', label: __('Contain', 'digifusion') },
-                { value: 'auto', label: __('Auto', 'digifusion') },
-                { value: '100% 100%', label: __('100% 100%', 'digifusion') },
-            ];
-            
-            // Keep original handlers
-            const onSelectImage = (media) => {
-                const url = media.url;
-                setImageUrl(url);
-                this.input.value = url;
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            const removeImage = () => {
-                setImageUrl('');
-                this.input.value = '';
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            return (
-                <div className="digifusion-image-control-inner">
-                    {imageUrl && (
-                        <div className="digifusion-image-preview">
-                            <img src={imageUrl} alt="" />
-                            <Button 
-                                isDestructive
-                                onClick={removeImage}
-                                className="digifusion-remove-image"
-                            >
-                                <span className="dashicons dashicons-trash"></span>
-                            </Button>
-                        </div>
-                    )}
-                    
-                    <MediaUpload
-                        onSelect={onSelectImage}
-                        allowedTypes={['image']}
-                        render={({ open }) => (
-                            <Button 
-                                isPrimary
-                                onClick={open}
-                                className="digifusion-upload-button"
-                            >
-                                {imageUrl ? __('Change Image', 'digifusion') : __('Select Image', 'digifusion')}
-                            </Button>
-                        )}
-                    />
-                    
-                    {/* Background Settings - Only show when image is selected */}
-                    {imageUrl && (
-                        <div className="digifusion-background-settings" style={{ marginTop: '15px' }}>
-                            <SelectControl
-                                label={__('Background Position', 'digifusion')}
-                                value={bgPosition}
-                                options={positionOptions}
-                                onChange={(value) => setBgPosition(value)}
-                            />
-                            
-                            <SelectControl
-                                label={__('Background Repeat', 'digifusion')}
-                                value={bgRepeat}
-                                options={repeatOptions}
-                                onChange={(value) => setBgRepeat(value)}
-                            />
-                            
-                            <SelectControl
-                                label={__('Background Size', 'digifusion')}
-                                value={bgSize}
-                                options={sizeOptions}
-                                onChange={(value) => setBgSize(value)}
-                            />
-                        </div>
-                    )}
-                </div>
-            );
-        };
-        
-        // Use createRoot instead of render
-        const root = createRoot(this.container);
-        root.render(<ImageComponent />);
-    }
-}
-
-/**
- * Dimensions Control - Improved version matching Gutenberg control
- */
-class DigiFusionDimensionsControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-dimensions-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.isResponsive = this.container.dataset.isResponsive === 'true';
-        this.units = JSON.parse(this.container.dataset.units || '[]');
-        
-        this.render();
-    }
-    
-    render() {
-        const DimensionsComponent = () => {
-            // Parse stored values
-            const [values, setValues] = useState(() => {
-                try {
-                    return JSON.parse(this.input.value);
-                } catch (e) {
-                    return {
-                        desktop: { top: '', right: '', bottom: '', left: '', unit: 'px' },
-                        tablet: { top: '', right: '', bottom: '', left: '', unit: 'px' },
-                        mobile: { top: '', right: '', bottom: '', left: '', unit: 'px' }
-                    };
-                }
-            });
-            
-            // Track linked state
-            const [isLinked, setIsLinked] = useState(true);
-            
-            // Use global responsive state for device switching if responsive
-            const [activeDevice, setActiveDevice] = useState('desktop');
-            
-            // Subscribe to global device state changes
-            useEffect(() => {
-                if (this.isResponsive) {
-                    const unsubscribe = window.digi.responsiveState.subscribe((device) => {
-                        setActiveDevice(device);
-                    });
-                    
-                    // Cleanup subscription on unmount
-                    return unsubscribe;
-                }
-            }, []);
-            
-            // Calculate if values are at default (all empty)
-            const isDefault = () => {
-                const current = values[activeDevice] || {};
-                return (
-                    current.top === '' &&
-                    current.right === '' &&
-                    current.bottom === '' &&
-                    current.left === ''
-                );
-            };
-            
-            // Update value and trigger change
-            const updateInputValue = (newValues) => {
-                setValues(newValues);
-                this.input.value = JSON.stringify(newValues);
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            // Handle dimension value change
-            const handleValueChange = (side, value) => {
-                const newValues = { ...values };
-                const current = { ...newValues[activeDevice] };
-                
-                if (isLinked) {
-                    // When linked, update all sides
-                    current.top = value;
-                    current.right = value;
-                    current.bottom = value;
-                    current.left = value;
-                } else {
-                    // When unlinked, update only the specific side
-                    current[side] = value;
-                }
-                
-                newValues[activeDevice] = current;
-                updateInputValue(newValues);
-            };
-            
-            // Handle unit change
-            const handleUnitChange = (unit) => {
-                const newValues = { ...values };
-                const current = { ...newValues[activeDevice] };
-                
-                current.unit = unit;
-                newValues[activeDevice] = current;
-                updateInputValue(newValues);
-            };
-            
-            // Reset values
-            const resetValues = () => {
-                const newValues = { ...values };
-                newValues[activeDevice] = {
-                    top: '',
-                    right: '',
-                    bottom: '',
-                    left: '',
-                    unit: newValues[activeDevice]?.unit || 'px'
-                };
-                updateInputValue(newValues);
-            };
-            
-            // Get max value based on unit
-            const getMaxValue = (unit) => {
-                switch (unit) {
-                    case "px": return 500;
-                    case "rem": return 30;
-                    case "em": return 30;
-                    case "%": return 100;
-                    default: return 100;
-                }
-            };
-            
-            // Get step value based on unit
-            const getStepValue = (unit) => {
-                switch (unit) {
-                    case "px": return 1;
-                    case "rem": return 0.1;
-                    case "em": return 0.1;
-                    case "%": return 1;
-                    default: return 1;
-                }
-            };
-            
-            // Current values for active device
-            const currentDevice = activeDevice;
-            const currentValues = values[currentDevice] || { top: '', right: '', bottom: '', left: '', unit: 'px' };
-            
-            return (
-                <div className="digifusion-dimension-control">
-					<div className="digifusion-control-header-wrap">
-                        <div className="digifusion-control-left">
-                            <label className="digifusion-control-title customize-control-title">{this.control.params.label}</label>
-                            {this.isResponsive && (
-                                <Button 
-                                    className="digifusion-responsive-device-toggle"
-                                    onClick={() => window.digi.responsiveState.toggleDevice()}
-                                    aria-label={__(`Switch to ${window.digi.responsiveState.getNextDevice()} view`, "digifusion")}
-                                >
-                                    {window.digi.deviceIcons[activeDevice]}
-                                </Button>
-                            )}
-                        </div>
-                        <div className="digifusion-control-right">
-                            <Button
-                                isSmall
-                                icon="image-rotate"
-                                onClick={resetValues}
-                                disabled={isDefault()}
-                                aria-label={__("Reset", "digifusion")}
-                                className="digifusion-reset"
-                            />
-                            {this.units && this.units.length > 1 && (
-                                <ToggleGroupControl
-                                    value={currentValues.unit}
-                                    onChange={handleUnitChange}
-                                    isBlock
-                                    isSmall
-									hideLabelFromVision
-                                    aria-label={__("Select Units", "digifusion")}
-                                    __next40pxDefaultSize={true}
-                                    __nextHasNoMarginBottom={true}
-                                >
-                                    {this.units.map((unit) => (
-                                        <ToggleGroupControlOption
-                                            key={unit.value}
-                                            value={unit.value}
-                                            label={unit.label}
-                                        />
-                                    ))}
-                                </ToggleGroupControl>
-                            )}
-                        </div>
-                    </div>
-                    
-                    <div className="digifusion-spacing-inputs">
-                        <input
-                            className="digifusion-spacing-input"
-                            type="number"
-                            value={currentValues.top}
-                            onChange={(e) => handleValueChange("top", e.target.value)}
-                            min={0}
-                            max={getMaxValue(currentValues.unit)}
-                            step={getStepValue(currentValues.unit)}
-                            aria-label={__("Top", "digifusion")}
-                        />
-                        <input
-                            className="digifusion-spacing-input"
-                            type="number"
-                            value={currentValues.right}
-                            onChange={(e) => handleValueChange("right", e.target.value)}
-                            min={0}
-                            max={getMaxValue(currentValues.unit)}
-                            step={getStepValue(currentValues.unit)}
-                            aria-label={__("Right", "digifusion")}
-                        />
-                        <input
-                            className="digifusion-spacing-input"
-                            type="number"
-                            value={currentValues.bottom}
-                            onChange={(e) => handleValueChange("bottom", e.target.value)}
-                            min={0}
-                            max={getMaxValue(currentValues.unit)}
-                            step={getStepValue(currentValues.unit)}
-                            aria-label={__("Bottom", "digifusion")}
-                        />
-                        <input
-                            className="digifusion-spacing-input"
-                            type="number"
-                            value={currentValues.left}
-                            onChange={(e) => handleValueChange("left", e.target.value)}
-                            min={0}
-                            max={getMaxValue(currentValues.unit)}
-                            step={getStepValue(currentValues.unit)}
-                            aria-label={__("Left", "digifusion")}
-                        />
-                        <span
-                            className={`digifusion-spacing-link ${
-                                !isLinked ? "digifusion-spacing-control-disconnected" : ""
-                            } dashicons ${
-                                isLinked ? "dashicons-admin-links" : "dashicons-editor-unlink"
-                            }`}
-                            onClick={() => setIsLinked(!isLinked)}
-                            title={isLinked ? __("Unlink values", "digifusion") : __("Link values", "digifusion")}
-                            role="button"
-                            tabIndex="0"
-                            onKeyPress={(event) => {
-                                if (event.key === 'Enter' || event.key === ' ') {
-                                    setIsLinked(!isLinked);
-                                }
-                            }}
-                        ></span>
-                    </div>
-                    <div className="digifusion-spacing-labels">
-                        <span className="digifusion-spacing-label">{__("Top", "digifusion")}</span>
-                        <span className="digifusion-spacing-label">{__("Right", "digifusion")}</span>
-                        <span className="digifusion-spacing-label">{__("Bottom", "digifusion")}</span>
-                        <span className="digifusion-spacing-label">{__("Left", "digifusion")}</span>
-                        <span className="digifusion-spacing-label digifusion-spacing-link-label"></span>
-                    </div>
-                </div>
-            );
-        };
-        
-        // Use createRoot instead of render
-        const root = createRoot(this.container);
-        root.render(<DimensionsComponent />);
-    }
-}
-
-/**
- * Range Control - Improved version matching Gutenberg control
- */
-class DigiFusionRangeControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-range-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.isResponsive = this.container.dataset.isResponsive === 'true';
-        this.min = parseFloat(this.container.dataset.min || 0);
-        this.max = parseFloat(this.container.dataset.max || 100);
-        this.step = parseFloat(this.container.dataset.step || 1);
-        this.units = JSON.parse(this.container.dataset.units || '[]');
-        
-        this.render();
-    }
-    
-    render() {
-        const RangeControlComponent = () => {
-            // Parse stored values
-            const [values, setValues] = useState(() => {
-                try {
-                    return JSON.parse(this.input.value);
-                } catch (e) {
-                    return {
-                        desktop: { value: '', unit: 'px' },
-                        tablet: { value: '', unit: 'px' },
-                        mobile: { value: '', unit: 'px' }
-                    };
-                }
-            });
-            
-            // For tracking input value
-            const [inputValue, setInputValue] = useState('');
-            
-            // Use global responsive state for device switching if responsive
-            const [activeDevice, setActiveDevice] = useState('desktop');
-            
-            // Generate unique ID for the range input
-            const [inputId] = useState(`range-control-${Math.floor(Math.random() * 10000)}`);
-            
-            // Subscribe to global device state changes
-            useEffect(() => {
-                if (this.isResponsive) {
-                    const unsubscribe = window.digi.responsiveState.subscribe((device) => {
-                        setActiveDevice(device);
-                    });
-                    
-                    // Cleanup subscription on unmount
-                    return unsubscribe;
-                }
-            }, []);
-            
-            // Update input value when active device changes
-            useEffect(() => {
-                const current = values[activeDevice] || { value: '', unit: 'px' };
-                setInputValue(current.value === '' ? '' : String(current.value));
-            }, [activeDevice, values]);
-            
-            // Update value and trigger change
-            const updateInputValue = (newValues) => {
-                setValues(newValues);
-                this.input.value = JSON.stringify(newValues);
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            // Handle direct number input change
-            const handleInputChange = (e) => {
-                const newValue = e.target.value;
-                
-                // Update local input state
-                setInputValue(newValue);
-                
-                // If empty, update with empty string
-                if (newValue === '') {
-                    const updatedValues = {
-                        ...values,
-                        [activeDevice]: { ...values[activeDevice], value: '' }
-                    };
-                    updateInputValue(updatedValues);
-                    return;
-                }
-                
-                // For non-empty values, convert to number
-                const numValue = parseFloat(newValue);
-                if (!isNaN(numValue)) {
-                    const updatedValues = {
-                        ...values,
-                        [activeDevice]: { ...values[activeDevice], value: numValue }
-                    };
-                    updateInputValue(updatedValues);
-                }
-            };
-            
-            // Handle slider change
-            const handleSliderChange = (e) => {
-                const newValue = parseFloat(e.target.value);
-                
-                // Update both input state and values
-                setInputValue(String(newValue));
-                const updatedValues = {
-                    ...values,
-                    [activeDevice]: { ...values[activeDevice], value: newValue }
-                };
-                updateInputValue(updatedValues);
-            };
-            
-            // Handle unit change
-            const handleUnitChange = (unit) => {
-                const updatedValues = {
-                    ...values,
-                    [activeDevice]: { ...values[activeDevice], unit }
-                };
-                updateInputValue(updatedValues);
-            };
-            
-            // Reset value
-            const resetValue = () => {
-                const updatedValues = {
-                    ...values,
-                    [activeDevice]: { ...values[activeDevice], value: '' }
-                };
-                updateInputValue(updatedValues);
-                setInputValue('');
-            };
-            
-            // Check if reset should be disabled
-            const isResetDisabled = () => {
-                return values[activeDevice]?.value === '';
-            };
-            
-            // Calculate percentage for track fill and thumb positioning
-            const getPercentage = () => {
-                const current = values[activeDevice] || { value: '', unit: 'px' };
-                if (current.value === '') return 0;
-                
-                const value = parseFloat(current.value);
-                return Math.max(0, Math.min(100, ((value - this.min) / (this.max - this.min)) * 100));
-            };
-            
-            const percentage = getPercentage();
-            const currentDevice = activeDevice;
-            const currentValues = values[currentDevice] || { value: '', unit: 'px' };
-            
-            return (
-                <div className="digifusion-range-control">
-                    <div className="digifusion-control-header-wrap">
-                        <div className="digifusion-control-left">
-                            <label className="digifusion-control-title customize-control-title">{this.control.params.label}</label>
-                            {this.isResponsive && (
-                                <Button 
-                                    className="digifusion-responsive-device-toggle"
-                                    onClick={() => window.digi.responsiveState.toggleDevice()}
-                                    aria-label={__(`Switch to ${window.digi.responsiveState.getNextDevice()} view`, "digifusion")}
-                                >
-                                    {window.digi.deviceIcons[activeDevice]}
-                                </Button>
-                            )}
-                        </div>
-                        <div className="digifusion-control-right">
-                            <Button
-                                isSmall
-                                icon="image-rotate"
-                                onClick={resetValue}
-                                disabled={isResetDisabled()}
-                                aria-label={__("Reset", "digifusion")}
-                                className="digifusion-reset"
-                            />
-                            {this.units && this.units.length > 1 && (
-                                <ToggleGroupControl
-                                    value={currentValues.unit}
-                                    onChange={handleUnitChange}
-                                    isBlock
-                                    isSmall
-									hideLabelFromVision
-                                    aria-label={__("Select Units", "digifusion")}
-                                    __next40pxDefaultSize={true}
-                                    __nextHasNoMarginBottom={true}
-                                >
-                                    {this.units.map((unit) => (
-                                        <ToggleGroupControlOption
-                                            key={unit.value}
-                                            value={unit.value}
-                                            label={unit.label}
-                                        />
-                                    ))}
-                                </ToggleGroupControl>
-                            )}
-                        </div>
-                    </div>
-                    
-                    <div className="digifusion-range-control__mobile-controls">
-                        <div className="digifusion-custom-range-control">
-                            <div className="range-slider-wrapper">
-                                <input 
-                                    className="range-slider"
-                                    id={inputId}
-                                    max={this.max}
-                                    min={this.min}
-                                    step={this.step}
-                                    type="range"
-                                    value={currentValues.value === '' ? 0 : currentValues.value}
-                                    onChange={handleSliderChange}
-                                />
-                                <div className="range-track">
-                                    <div 
-                                        className="range-track-fill"
-                                        style={{ width: `${percentage}%` }}
-                                    ></div>
-                                </div>
-                                <div 
-                                    className="range-thumb"
-                                    style={{ left: `${percentage}%` }}
-                                ></div>
-                            </div>
-                            <div className="input-wrapper">
-                                <input 
-                                    className="number-input"
-                                    type="number"
-                                    id={`number-${inputId}`}
-                                    value={inputValue}
-                                    onChange={handleInputChange}
-                                    min={this.min}
-                                    max={this.max}
-                                    step={this.step}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-        
-        // Use createRoot instead of render
-        const root = createRoot(this.container);
-        root.render(<RangeControlComponent />);
-    }
-}
 
 /**
  * Color Picker Control
@@ -920,53 +397,264 @@ class DigiFusionColorPickerControl {
         }
         
         this.alpha = this.container.dataset.alpha === 'true';
+        this.colors = JSON.parse(this.container.dataset.colors || '[]');
         
         this.render();
     }
     
     render() {
         const ColorPickerComponent = () => {
-            const [color, setColor] = useState(this.input.value || '#000000');
-            const [isOpen, setIsOpen] = useState(false);
+            const isMultiColor = this.colors && this.colors.length > 0;
+            const isGlobalColors = this.control.id === 'digifusion_global_colors';
             
-            const updateColor = (newColor) => {
-                let colorValue;
+            if (isMultiColor) {
+                const [values, setValues] = useState(() => {
+                    try {
+                        return JSON.parse(this.input.value) || {};
+                    } catch (e) {
+                        const defaults = {};
+                        this.colors.forEach(color => {
+                            defaults[color.key] = color.default || '#000000';
+                        });
+                        return defaults;
+                    }
+                });
                 
-                // Simplify the approach to match the box shadow control
-                if (newColor.rgb && this.alpha) {
-                    // If RGB with alpha is available, use it
-                    const { r, g, b, a } = newColor.rgb;
-                    colorValue = `rgba(${r}, ${g}, ${b}, ${a})`;
-                } else if (newColor.hex) {
-                    // Otherwise use hex
-                    colorValue = newColor.hex;
-                } else if (typeof newColor === 'string') {
-                    // Direct string input
-                    colorValue = newColor;
-                } else {
-                    // Fallback
-                    return;
-                }
+                const [openPicker, setOpenPicker] = useState(null);
                 
-                setColor(colorValue);
-                this.input.value = colorValue;
+                // Listen for external changes (from global color sync)
+                useEffect(() => {
+                    const handleInputChange = () => {
+                        try {
+                            const newValues = JSON.parse(this.input.value || '{}');
+                            setValues(newValues);
+                        } catch (e) {
+                            // Ignore invalid JSON
+                        }
+                    };
+                    
+                    this.input.addEventListener('change', handleInputChange);
+                    return () => this.input.removeEventListener('change', handleInputChange);
+                }, []);
                 
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            return (
-                <div className="digifusion-color-picker-wrap">
-                    <label className="digifusion-color-label customize-control-title">{this.control.params.label}</label>
-                    <div className="digifusion-color-picker-container">
-                        <Button
-                            className="digifusion-color-preview"
-                            style={{ backgroundColor: color }}
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
-                            <span className="screen-reader-text">{__('Select color', 'digifusion')}</span>
-                        </Button>
+                // Update value and trigger change
+                const updateValue = (colorKey, newColor) => {
+                    let colorValue;
+                    
+                    if (newColor.rgb && this.alpha) {
+                        const { r, g, b, a } = newColor.rgb;
+                        colorValue = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    } else if (newColor.hex) {
+                        colorValue = newColor.hex;
+                    } else if (typeof newColor === 'string') {
+                        colorValue = newColor;
+                    } else {
+                        return;
+                    }
+                    
+                    const newValues = { ...values, [colorKey]: colorValue };
+                    setValues(newValues);
+                    
+                    this.input.value = JSON.stringify(newValues);
+                    const event = new Event('change');
+                    this.input.dispatchEvent(event);
+                };
+
+                /**
+                 * Enhanced reset function for global colors
+                 */
+                const resetGlobalColorWithCascade = (colorKey, oldColor, defaultColor) => {
+                    if (!window.digifusionCustomizer || !window.digifusionCustomizer.colorSettings) {
+                        return;
+                    }
+
+                    const colorSettings = window.digifusionCustomizer.colorSettings.filter(
+                        setting => setting !== 'digifusion_global_colors'
+                    );
+
+                    // Update all dependent colors that are using the old global color
+                    colorSettings.forEach(settingId => {
+                        const control = wp.customize.control(settingId);
+                        if (!control) return;
+
+                        try {
+                            const currentValue = control.setting.get();
+                            const colors = JSON.parse(currentValue || '{}');
+                            let hasChanges = false;
+
+                            // Check each color in this setting
+                            Object.keys(colors).forEach(key => {
+                                if (colors[key] && colors[key].toLowerCase() === oldColor.toLowerCase()) {
+                                    colors[key] = defaultColor;
+                                    hasChanges = true;
+                                }
+                            });
+
+                            // Update the setting if changes were made
+                            if (hasChanges) {
+                                const newValue = JSON.stringify(colors);
+                                control.setting.set(newValue);
+                                
+                                // Update the control UI
+                                const input = document.getElementById(`_customize-input-${settingId}`);
+                                if (input) {
+                                    input.value = newValue;
+                                    const event = new Event('change');
+                                    input.dispatchEvent(event);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Error updating dependent color for setting:', settingId, e);
+                        }
+                    });
+                };
+                
+                return (
+                    <div className="digifusion-color-picker-wrap">
+                        <label className="digifusion-color-label customize-control-title">{this.control.params.label}</label>
+                        
+                        <div className="digifusion-color-list">
+                            {this.colors.map((colorConfig, index) => {
+                                const currentColor = values[colorConfig.key] || colorConfig.default || '#000000';
+                                const isOpen = openPicker === colorConfig.key;
+                                const isDefault = currentColor.toLowerCase() === (colorConfig.default || '#000000').toLowerCase();
+                                
+                                // Enhanced reset function
+                                const resetColor = () => {
+                                    const oldColor = currentColor;
+                                    const defaultColor = colorConfig.default || '#000000';
+                                    
+                                    // Update the global color first
+                                    const newValues = { ...values, [colorConfig.key]: defaultColor };
+                                    setValues(newValues);
+                                    
+                                    this.input.value = JSON.stringify(newValues);
+                                    const event = new Event('change');
+                                    this.input.dispatchEvent(event);
+                                    
+                                    // If this is a global color control, cascade the reset
+                                    if (isGlobalColors) {
+                                        // Small delay to ensure the global color is updated first
+                                        setTimeout(() => {
+                                            resetGlobalColorWithCascade(colorConfig.key, oldColor, defaultColor);
+                                        }, 50);
+                                    }
+                                };
+                                
+                                return (
+                                    <div key={colorConfig.key} className="digifusion-color-item">
+                                        <div className="digifusion-color-item-inner">
+                                            <Button
+                                                className="digifusion-color-button"
+                                                onClick={() => setOpenPicker(isOpen ? null : colorConfig.key)}
+                                                aria-expanded={isOpen}
+                                                aria-label={`${colorConfig.label} color picker`}
+                                            >
+                                                <div className="digifusion-color-indicator-wrapper">
+                                                    <span 
+                                                        className="digifusion-color-indicator"
+                                                        style={{ backgroundColor: currentColor }}
+                                                    ></span>
+                                                    <span className="digifusion-color-name">
+                                                        {colorConfig.label}
+                                                    </span>
+                                                </div>
+                                            </Button>
+                                            
+                                            <Button
+                                                className="digifusion-color-reset"
+                                                icon="image-rotate"
+                                                onClick={resetColor}
+                                                disabled={isDefault}
+                                                isSmall
+                                                aria-label={__(`Reset ${colorConfig.label} to default`, "digifusion")}
+                                                title={__(`Reset to default (${colorConfig.default})${isGlobalColors ? ' - will update related colors' : ''}`, "digifusion")}
+                                            />
+                                        </div>
+                                        
+                                        {isOpen && (
+                                            <Popover
+                                                position="bottom"
+                                                onClose={() => setOpenPicker(null)}
+                                            >
+                                                <div className="digifusion-color-picker-popover">
+                                                    <ColorPicker
+                                                        color={currentColor}
+                                                        onChangeComplete={(color) => updateValue(colorConfig.key, color)}
+                                                        disableAlpha={!this.alpha}
+                                                    />
+                                                </div>
+                                            </Popover>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            } else {
+                // Single color picker logic (unchanged)
+                const [color, setColor] = useState(this.input.value || '#000000');
+                const [isOpen, setIsOpen] = useState(false);
+                
+                const defaultColor = this.control.params.default || '#000000';
+                const isDefault = color.toLowerCase() === defaultColor.toLowerCase();
+                
+                const updateColor = (newColor) => {
+                    let colorValue;
+                    
+                    if (newColor.rgb && this.alpha) {
+                        const { r, g, b, a } = newColor.rgb;
+                        colorValue = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    } else if (newColor.hex) {
+                        colorValue = newColor.hex;
+                    } else if (typeof newColor === 'string') {
+                        colorValue = newColor;
+                    } else {
+                        return;
+                    }
+                    
+                    setColor(colorValue);
+                    this.input.value = colorValue;
+                    
+                    const event = new Event('change');
+                    this.input.dispatchEvent(event);
+                };
+                
+                const resetColor = () => {
+                    setColor(defaultColor);
+                    this.input.value = defaultColor;
+                    
+                    const event = new Event('change');
+                    this.input.dispatchEvent(event);
+                };
+                
+                return (
+                    <div className="digifusion-color-picker-wrap">
+                        <div className="digifusion-control-header-row">
+                            <label className="digifusion-color-label customize-control-title">{this.control.params.label}</label>
+                            
+                            <div className="digifusion-single-color-controls">
+                                <Button
+                                    className="digifusion-color-preview"
+                                    style={{ backgroundColor: color }}
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    aria-label={__('Select color', 'digifusion')}
+                                >
+                                    <span className="screen-reader-text">{__('Select color', 'digifusion')}</span>
+                                </Button>
+                                
+                                <Button
+                                    className="digifusion-color-reset"
+                                    icon="image-rotate"
+                                    onClick={resetColor}
+                                    disabled={isDefault}
+                                    isSmall
+                                    aria-label={__('Reset to default', "digifusion")}
+                                    title={__(`Reset to default (${defaultColor})`, "digifusion")}
+                                />
+                            </div>
+                        </div>
                         
                         {isOpen && (
                             <Popover
@@ -983,398 +671,12 @@ class DigiFusionColorPickerControl {
                             </Popover>
                         )}
                     </div>
-                </div>
-            );
+                );
+            }
         };
         
-        // Use createRoot instead of render
         const root = createRoot(this.container);
         root.render(<ColorPickerComponent />);
-    }
-}
-
-/**
- * Box Shadow Control
- */
-class DigiFusionBoxShadowControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-box-shadow-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.render();
-    }
-    
-    render() {
-        const BoxShadowComponent = () => {
-            const defaultValues = {
-                normal: {
-                    enable: false,
-                    color: 'rgba(0, 0, 0, 0.2)',
-                    horizontal: 0,
-                    vertical: 0,
-                    blur: 0,
-                    spread: 0,
-                    position: 'outset'
-                },
-                hover: {
-                    enable: false,
-                    color: 'rgba(0, 0, 0, 0.2)',
-                    horizontal: 0,
-                    vertical: 0,
-                    blur: 0,
-                    spread: 0,
-                    position: 'outset'
-                }
-            };
-            
-            const [values, setValues] = useState(() => {
-                try {
-                    return JSON.parse(this.input.value) || defaultValues;
-                } catch (e) {
-                    return defaultValues;
-                }
-            });
-            
-            const [activeTab, setActiveTab] = useState('normal');
-            const [isColorOpen, setIsColorOpen] = useState(false);
-            
-            const updateValue = (state, key, value) => {
-                const newValues = { ...values };
-                
-                if (!newValues[state]) {
-                    newValues[state] = { ...defaultValues[state] };
-                }
-                
-                newValues[state][key] = value;
-                setValues(newValues);
-                updateInputValue(newValues);
-            };
-            
-            const updateInputValue = (newValues) => {
-                this.input.value = JSON.stringify(newValues);
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            const currentState = values[activeTab] || defaultValues[activeTab];
-            
-            return (
-                <div className="digifusion-box-shadow-control-inner">
-                    <TabPanel
-                        className="digifusion-control-tabs"
-                        activeClass="active-tab"
-                        tabs={[
-                            {
-                                name: 'normal',
-                                title: __('Normal', 'digifusion'),
-                                className: 'digifusion-tab normal',
-                            },
-                            {
-                                name: 'hover',
-                                title: __('Hover', 'digifusion'),
-                                className: 'digifusion-tab hover',
-                            },
-                        ]}
-                        onSelect={setActiveTab}
-                    >
-                        {() => (
-                            <React.Fragment>
-                                <ToggleControl
-                                    label={__('Enable Box Shadow', 'digifusion')}
-                                    checked={currentState.enable}
-                                    onChange={(value) => updateValue(activeTab, 'enable', value)}
-                                    __nextHasNoMarginBottom={true}
-                                />
-                                
-                                {currentState.enable && (
-                                    <React.Fragment>
-                                        <div className="digifusion-box-shadow-color">
-                                            <span className="digifusion-box-shadow-label">{__('Color', 'digifusion')}</span>
-                                            <div className="digifusion-color-picker-container">
-                                                <Button
-                                                    className="digifusion-color-preview"
-                                                    style={{ backgroundColor: currentState.color }}
-                                                    onClick={() => setIsColorOpen(!isColorOpen)}
-                                                >
-                                                    <span className="screen-reader-text">{__('Select color', 'digifusion')}</span>
-                                                </Button>
-                                                
-                                                {isColorOpen && (
-                                                    <Popover
-                                                        position="bottom"
-                                                        onClose={() => setIsColorOpen(false)}
-                                                    >
-                                                        <div className="digifusion-color-picker-popover">
-                                                            <ColorPicker
-                                                                color={currentState.color}
-                                                                onChangeComplete={(color) => {
-                                                                    if (color.rgb) {
-                                                                        const { r, g, b, a } = color.rgb;
-                                                                        updateValue(activeTab, 'color', `rgba(${r}, ${g}, ${b}, ${a})`);
-                                                                    } else {
-                                                                        updateValue(activeTab, 'color', color.hex);
-                                                                    }
-                                                                }}
-                                                                disableAlpha={false}
-                                                            />
-                                                        </div>
-                                                    </Popover>
-                                                )}
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="digifusion-box-shadow-controls">
-                                            <RangeControl
-                                                label={__('Horizontal', 'digifusion')}
-                                                value={currentState.horizontal}
-                                                onChange={(value) => updateValue(activeTab, 'horizontal', value)}
-                                                min={-100}
-                                                max={100}
-                                                step={1}
-                                                allowReset={true}
-                                                resetFallbackValue={0}
-                                                __next40pxDefaultSize={true}
-                                                __nextHasNoMarginBottom={true}
-                                            />
-                                            
-                                            <RangeControl
-                                                label={__('Vertical', 'digifusion')}
-                                                value={currentState.vertical}
-                                                onChange={(value) => updateValue(activeTab, 'vertical', value)}
-                                                min={-100}
-                                                max={100}
-                                                step={1}
-                                                allowReset={true}
-                                                resetFallbackValue={0}
-                                                __next40pxDefaultSize={true}
-                                                __nextHasNoMarginBottom={true}
-                                            />
-                                            
-                                            <RangeControl
-                                                label={__('Blur', 'digifusion')}
-                                                value={currentState.blur}
-                                                onChange={(value) => updateValue(activeTab, 'blur', value)}
-                                                min={0}
-                                                max={100}
-                                                step={1}
-                                                allowReset={true}
-                                                resetFallbackValue={0}
-                                                __next40pxDefaultSize={true}
-                                                __nextHasNoMarginBottom={true}
-                                            />
-                                            
-                                            <RangeControl
-                                                label={__('Spread', 'digifusion')}
-                                                value={currentState.spread}
-                                                onChange={(value) => updateValue(activeTab, 'spread', value)}
-                                                min={-100}
-                                                max={100}
-                                                step={1}
-                                                allowReset={true}
-                                                resetFallbackValue={0}
-                                                __next40pxDefaultSize={true}
-                                                __nextHasNoMarginBottom={true}
-                                            />
-                                            
-                                            <div className="digifusion-multi-buttons-control">
-                                                <div className="digifusion-multi-buttons-control__label">
-                                                    {__('Position', 'digifusion')}
-                                                </div>
-                                                <ToggleGroupControl
-                                                    value={currentState.position}
-                                                    onChange={(value) => updateValue(activeTab, 'position', value)}
-                                                    isBlock
-                                                    __next40pxDefaultSize={true}
-                                                    __nextHasNoMarginBottom={true}
-                                                >
-                                                    <ToggleGroupControlOption 
-                                                        value="outset" 
-                                                        label={__('Outset', 'digifusion')} 
-                                                    />
-                                                    <ToggleGroupControlOption 
-                                                        value="inset" 
-                                                        label={__('Inset', 'digifusion')} 
-                                                    />
-                                                </ToggleGroupControl>
-                                            </div>
-                                        </div>
-                                    </React.Fragment>
-                                )}
-                            </React.Fragment>
-                        )}
-                    </TabPanel>
-                </div>
-            );
-        };
-        
-        // Use createRoot instead of render
-        const root = createRoot(this.container);
-        root.render(<BoxShadowComponent />);
-    }
-}
-
-/**
- * Rich Text Control
- */
-class DigiFusionRichTextControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-rich-text-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.editorId = `digifusion-rich-text-${control.id}`;
-        this.editor = document.getElementById(this.editorId);
-        
-        if (!this.editor) {
-            return;
-        }
-        
-        this.initialize();
-    }
-    
-    initialize() {
-        // Initialize QuickTags normally
-        if (window.quicktags) {
-            const buttons = ['strong', 'em', 'link', 'ul', 'ol', 'li', 'code'];
-            window.quicktags({
-                id: this.editorId,
-                buttons: buttons.join(',')
-            });
-            
-            // After QuickTags initializes, observe the toolbar
-            this.observeQuickTagsToolbar();
-        }
-        
-        // Add event listener for the textarea direct typing
-        this.editor.addEventListener('input', () => this.syncWithCustomizer());
-    }
-    
-    observeQuickTagsToolbar() {
-        // We need to wait for QuickTags to finish initializing
-        setTimeout(() => {
-            const toolbar = document.getElementById(`qt_${this.editorId}_toolbar`);
-            if (!toolbar) return;
-            
-            // Add MutationObserver to detect when the editor content changes
-            const observer = new MutationObserver((mutations) => {
-                // If the textarea content has changed, sync with customizer
-                this.syncWithCustomizer();
-            });
-            
-            // Observe the editor for changes to its attributes and content
-            observer.observe(this.editor, { 
-                attributes: true, 
-                childList: true, 
-                characterData: true,
-                subtree: true
-            });
-            
-            // Add click listeners to all QuickTags buttons
-            const buttons = toolbar.querySelectorAll('.ed_button');
-            buttons.forEach(button => {
-                // Add our own click handler that runs after the QuickTags handler
-                button.addEventListener('click', () => {
-                    // Use setTimeout to ensure this runs after QuickTags has finished
-                    setTimeout(() => {
-                        this.syncWithCustomizer();
-                    }, 10);
-                });
-            });
-            
-            // Special handling for link button
-            this.handleLinkButton(toolbar);
-            
-            // Add special handling for QTags.closeAllTags
-            const originalCloseAllTags = window.QTags.closeAllTags;
-            if (originalCloseAllTags) {
-                window.QTags.closeAllTags = (editor_id) => {
-                    originalCloseAllTags(editor_id);
-                    if (editor_id === this.editorId) {
-                        setTimeout(() => this.syncWithCustomizer(), 10);
-                    }
-                };
-            }
-            
-            // Monitor keyboard shortcuts that might be used by QuickTags
-            document.addEventListener('keydown', (e) => {
-                // Common keyboard shortcuts like Ctrl+B, Ctrl+I, etc.
-                if ((e.ctrlKey || e.metaKey) && 
-                    ['b', 'i', 'u', 'k'].includes(e.key.toLowerCase()) && 
-                    document.activeElement === this.editor) {
-                    setTimeout(() => this.syncWithCustomizer(), 10);
-                }
-            });
-        }, 500); // Give QuickTags time to initialize
-    }
-    
-    handleLinkButton(toolbar) {
-        // Find the link button
-        const linkButton = toolbar.querySelector('#qt_' + this.editorId + '_link');
-        if (!linkButton) return;
-        
-        // Save original QTags.insertLink function
-        if (window.QTags && window.QTags.insertLink) {
-            const originalInsertLink = window.QTags.insertLink;
-            
-            window.QTags.insertLink = (e, c, ed) => {
-                originalInsertLink(e, c, ed);
-                
-                // If this is our editor, sync with customizer
-                if (ed && ed.id === this.editorId) {
-                    // Add a longer delay for link insertion because it involves a prompt
-                    setTimeout(() => this.syncWithCustomizer(), 100);
-                }
-            };
-        }
-        
-        // Create our own link handler as a backup
-        linkButton.addEventListener('click', () => {
-            // Wait for any dialog to appear, then for it to close
-            setTimeout(() => {
-                // Start checking for changes
-                const checkInterval = setInterval(() => {
-                    // If editor value changed, sync and stop checking
-                    const hiddenValue = this.input.value;
-                    const editorValue = this.editor.value;
-                    
-                    if (hiddenValue !== editorValue) {
-                        this.syncWithCustomizer();
-                        clearInterval(checkInterval);
-                    }
-                }, 100);
-                
-                // Stop checking after 5 seconds even if no change detected
-                setTimeout(() => clearInterval(checkInterval), 5000);
-            }, 100);
-        });
-    }
-    
-    syncWithCustomizer() {
-        // Copy content from textarea to hidden input
-        this.input.value = this.editor.value;
-        
-        // Trigger change event with bubbling
-        const event = new Event('change', { bubbles: true });
-        this.input.dispatchEvent(event);
-        
-        // Directly update WordPress customizer - this is the most reliable method
-        if (wp && wp.customize) {
-            const setting = wp.customize(this.control.id);
-            if (setting) {
-                setting.set(this.editor.value);
-            }
-        }
     }
 }
 
@@ -1431,55 +733,6 @@ class DigiFusionToggleControl {
         // Use createRoot instead of render
         const root = createRoot(this.container);
         root.render(<ToggleComponent />);
-    }
-}
-
-/**
- * Text Control
- */
-class DigiFusionTextControl {
-    constructor(control) {
-        this.control = control;
-        this.container = document.querySelector(`.digifusion-text-container[data-control-id="${control.id}"]`);
-        this.input = document.getElementById(`_customize-input-${control.id}`);
-        
-        if (!this.container || !this.input) {
-            return;
-        }
-        
-        this.render();
-    }
-    
-    render() {
-        const TextControlComponent = () => {
-            const [value, setValue] = useState(this.input.value || '');
-            
-            const handleChange = (newValue) => {
-                setValue(newValue);
-                
-                // Update the input value
-                this.input.value = newValue;
-                
-                // Trigger the change event
-                const event = new Event('change');
-                this.input.dispatchEvent(event);
-            };
-            
-            return (
-                <div className="digifusion-text-control-inner">
-                    <TextControl
-                        value={value}
-                        onChange={handleChange}
-                        __next40pxDefaultSize={true}
-                        __nextHasNoMarginBottom={true}
-                    />
-                </div>
-            );
-        };
-        
-        // Use createRoot instead of render
-        const root = createRoot(this.container);
-        root.render(<TextControlComponent />);
     }
 }
 
@@ -1542,94 +795,258 @@ class DigiFusionSelectControl {
 }
 
 /**
- * Responsive Button Group Control (similar to the example code provided)
+ * Typography Control
  */
-class DigiFusionButtonGroupControl {
+class DigiFusionTypographyControl {
     constructor(control) {
         this.control = control;
-        this.container = document.querySelector(`.digifusion-button-group-container[data-control-id="${control.id}"]`);
+        this.container = document.querySelector(`.digifusion-typography-container[data-control-id="${control.id}"]`);
         this.input = document.getElementById(`_customize-input-${control.id}`);
         
         if (!this.container || !this.input) {
+            console.error('Typography control container or input not found for:', control.id);
             return;
         }
         
-        this.isResponsive = this.container.dataset.isResponsive === 'true';
-        this.choices = JSON.parse(this.container.dataset.choices || '[]');
-        this.defaultValue = this.container.dataset.defaultValue || '';
-        this.defaultValues = JSON.parse(this.container.dataset.defaultValues || 'null');
+        // Get defaults from the data attribute
+        try {
+            this.defaults = JSON.parse(this.container.dataset.defaults || '{}');
+        } catch (e) {
+            console.error('Failed to parse default values from data attribute:', e);
+            this.defaults = {};
+        }
         
         this.render();
     }
     
     render() {
-        const ButtonGroupComponent = () => {
+        const TypographyComponent = () => {
+            // State for panel toggle
+            const [isOpen, setIsOpen] = useState(false);
+            
             // Parse stored values
             const [values, setValues] = useState(() => {
                 try {
-                    return JSON.parse(this.input.value) || {
-                        desktop: this.defaultValue,
-                        tablet: this.defaultValue,
-                        mobile: this.defaultValue
-                    };
+                    const parsed = JSON.parse(this.input.value);
+                    return { ...this.defaults, ...parsed };
                 } catch (e) {
-                    return {
-                        desktop: this.defaultValue,
-                        tablet: this.defaultValue,
-                        mobile: this.defaultValue
-                    };
+                    return this.defaults;
                 }
             });
             
-            // Use global responsive state for device switching if responsive
+            // Use global responsive state
             const [activeDevice, setActiveDevice] = useState('desktop');
             
             // Subscribe to global device state changes
             useEffect(() => {
-                if (this.isResponsive) {
+                if (window.digi?.responsiveState?.subscribe) {
                     const unsubscribe = window.digi.responsiveState.subscribe((device) => {
                         setActiveDevice(device);
                     });
-                    
-                    // Cleanup subscription on unmount
                     return unsubscribe;
                 }
             }, []);
             
-            // Ensure value is properly structured with device keys
-            const ensureResponsiveValue = (val) => {
-                if (!val || typeof val !== 'object') {
-                    return {
-                        desktop: this.defaultValue,
-                        tablet: this.defaultValue,
-                        mobile: this.defaultValue
-                    };
+            // Font family options (dynamic with Google Fonts)
+            const [fontFamilyOptions, setFontFamilyOptions] = useState([
+                { label: __('Default', 'digifusion'), value: '' },
+                { label: __('System UI', 'digifusion'), value: 'system-ui' },
+                { label: __('Arial', 'digifusion'), value: 'Arial, sans-serif' },
+                { label: __('Helvetica', 'digifusion'), value: 'Helvetica, sans-serif' },
+                { label: __('Times New Roman', 'digifusion'), value: 'Times New Roman, serif' },
+                { label: __('Georgia', 'digifusion'), value: 'Georgia, serif' },
+                { label: __('Courier New', 'digifusion'), value: 'Courier New, monospace' },
+            ]);
+            
+            // Font weight options (dynamic based on selected font)
+            const [fontWeightOptions, setFontWeightOptions] = useState([
+                { label: __('Default', 'digifusion'), value: '' },
+                { label: '100 - Thin', value: '100' },
+                { label: '200 - Extra Light', value: '200' },
+                { label: '300 - Light', value: '300' },
+                { label: '400 - Normal', value: '400' },
+                { label: '500 - Medium', value: '500' },
+                { label: '600 - Semi Bold', value: '600' },
+                { label: '700 - Bold', value: '700' },
+                { label: '800 - Extra Bold', value: '800' },
+                { label: '900 - Black', value: '900' },
+            ]);
+            
+            // Load Google Fonts on component mount
+            useEffect(() => {
+                // Get Google Fonts data from the global object
+                const googleFonts = window.digifusionGoogleFonts || {};
+                
+                if (Object.keys(googleFonts).length > 0) {
+                    // System fonts
+                    const systemFonts = [
+                        { label: __('Default', 'digifusion'), value: '' },
+                        { label: __('System UI', 'digifusion'), value: 'system-ui' },
+                        { label: __('Arial', 'digifusion'), value: 'Arial, sans-serif' },
+                        { label: __('Helvetica', 'digifusion'), value: 'Helvetica, sans-serif' },
+                        { label: __('Times New Roman', 'digifusion'), value: 'Times New Roman, serif' },
+                        { label: __('Georgia', 'digifusion'), value: 'Georgia, serif' },
+                        { label: __('Courier New', 'digifusion'), value: 'Courier New, monospace' },
+                    ];
+                    
+                    // Google Fonts
+                    const googleFontsList = Object.keys(googleFonts).map(fontName => ({
+                        label: fontName,
+                        value: fontName
+                    }));
+                    
+                    // Combine system fonts and Google Fonts
+                    setFontFamilyOptions([...systemFonts, ...googleFontsList]);
+                }
+            }, []);
+            
+            // Update font weights when font family changes - Enhanced version
+            useEffect(() => {
+                const selectedFont = values.fontFamily;
+                
+                // If no font selected or system font, use default weights
+                if (!selectedFont || selectedFont === '' || selectedFont.includes(',') || selectedFont === 'system-ui') {
+                    setFontWeightOptions([
+                        { label: __('Default', 'digifusion'), value: '' },
+                        { label: '100 - Thin', value: '100' },
+                        { label: '200 - Extra Light', value: '200' },
+                        { label: '300 - Light', value: '300' },
+                        { label: '400 - Normal', value: '400' },
+                        { label: '500 - Medium', value: '500' },
+                        { label: '600 - Semi Bold', value: '600' },
+                        { label: '700 - Bold', value: '700' },
+                        { label: '800 - Extra Bold', value: '800' },
+                        { label: '900 - Black', value: '900' },
+                    ]);
+                    return;
                 }
                 
-                const result = {};
-                ['desktop', 'tablet', 'mobile'].forEach(device => {
-                    if (val[device] !== undefined) {
-                        result[device] = val[device];
-                    } else {
-                        result[device] = this.defaultValue;
-                    }
-                });
+                // Get available weights for Google Font
+                const googleFonts = window.digifusionGoogleFonts || {};
+                const fontData = googleFonts[selectedFont];
                 
-                return result;
-            };
+                if (fontData && (fontData.v || fontData.weight)) {
+                    // Parse weights from v (variants) or weight array
+                    const weights = new Set(['']); // Always include default
+                    const weightLabels = {
+                        '100': '100 - Thin',
+                        '200': '200 - Extra Light', 
+                        '300': '300 - Light',
+                        '400': '400 - Normal',
+                        '500': '500 - Medium',
+                        '600': '600 - Semi Bold',
+                        '700': '700 - Bold',
+                        '800': '800 - Extra Bold',
+                        '900': '900 - Black'
+                    };
+                    
+                    // Use weight array first if available, otherwise use v (variants)
+                    const variantsToProcess = fontData.weight || fontData.v || [];
+                    
+                    variantsToProcess.forEach(variant => {
+                        // Handle different data formats
+                        let weight = variant;
+                        
+                        // Skip 'Default' from weight array
+                        if (weight === 'Default') {
+                            return;
+                        }
+                        
+                        // If variant is a string, extract weight
+                        if (typeof variant === 'string') {
+                            weight = variant.replace(/italic/gi, '').replace(/i$/i, '').trim();
+                        }
+                        
+                        // Handle specific cases
+                        if (weight === 'regular' || weight === 'normal') {
+                            weights.add('400');
+                        } else if (weight === 'bold') {
+                            weights.add('700');
+                        } else if (/^\d+$/.test(weight)) {
+                            weights.add(weight);
+                        }
+                    });
+                    
+                    const weightOptions = Array.from(weights).sort((a, b) => {
+                        if (a === '') return -1;
+                        if (b === '') return 1;
+                        return parseInt(a) - parseInt(b);
+                    }).map(weight => ({
+                        label: weight === '' ? __('Default', 'digifusion') : (weightLabels[weight] || weight),
+                        value: weight
+                    }));
+                    
+                    setFontWeightOptions(weightOptions);
+                    
+                    // Reset font weight to default if current weight is not available
+                    const currentWeight = values.fontWeight;
+                    const availableWeights = Array.from(weights);
+                    
+                    if (currentWeight && !availableWeights.includes(currentWeight)) {
+                        // Reset to default since current weight is not available
+                        const resetValues = {
+                            ...values,
+                            fontWeight: ''
+                        };
+                        setValues(resetValues);
+                        this.input.value = JSON.stringify(resetValues);
+                        
+                        const event = new Event('change');
+                        this.input.dispatchEvent(event);
+                    }
+                } else {
+                    // Fallback to common weights for fonts without variant data
+                    setFontWeightOptions([
+                        { label: __('Default', 'digifusion'), value: '' },
+                        { label: '400 - Normal', value: '400' },
+                        { label: '700 - Bold', value: '700' },
+                    ]);
+                    
+                    // Reset font weight if not available in fallback options
+                    const currentWeight = values.fontWeight;
+                    if (currentWeight && !['', '400', '700'].includes(currentWeight)) {
+                        const resetValues = {
+                            ...values,
+                            fontWeight: ''
+                        };
+                        setValues(resetValues);
+                        this.input.value = JSON.stringify(resetValues);
+                        
+                        const event = new Event('change');
+                        this.input.dispatchEvent(event);
+                    }
+                }
+            }, [values.fontFamily]); // Important: Only trigger when fontFamily changes
             
-            const safeValues = ensureResponsiveValue(values);
+            // Load currently selected font on mount
+            useEffect(() => {
+                if (values.fontFamily && !values.fontFamily.includes(',') && values.fontFamily !== 'system-ui') {
+                    loadGoogleFont(values.fontFamily, values.fontWeight || '400');
+                }
+            }, []);
             
-            // Update value for current device
-            const updateValue = (newValue) => {
-                const updatedValues = {
-                    ...safeValues,
-                    [activeDevice]: newValue
+            // Update handler for all typography settings
+            const updateTypographyValue = (property, newValue) => {
+                let updatedValues = {
+                    ...values,
+                    [property]: newValue
                 };
                 
-                setValues(updatedValues);
+                // Special handling for font family changes
+                if (property === 'fontFamily') {
+                    // Reset font weight to default when font family changes
+                    updatedValues = {
+                        ...updatedValues,
+                        fontWeight: '' // Reset to default
+                    };
+                    
+                    // Load Google Font when font family changes
+                    if (newValue && !newValue.includes(',') && newValue !== 'system-ui') {
+                        loadGoogleFont(newValue, '400'); // Use 400 as default weight
+                    }
+                }
                 
-                // Update the input value
+                setValues(updatedValues);
                 this.input.value = JSON.stringify(updatedValues);
                 
                 // Trigger the change event
@@ -1637,83 +1054,379 @@ class DigiFusionButtonGroupControl {
                 this.input.dispatchEvent(event);
             };
             
-            // Reset to default value
-            const resetValue = () => {
-                let defaultVal;
-                
-                if (this.defaultValues) {
-                    defaultVal = this.defaultValues[activeDevice] !== undefined ? 
-                        this.defaultValues[activeDevice] : 
-                        (this.defaultValues.default !== undefined ? this.defaultValues.default : this.defaultValue);
-                } else {
-                    defaultVal = this.defaultValue;
+            // Enhanced Load Google Font helper function - Using API v1 for compatibility
+            const loadGoogleFont = (fontFamily, fontWeight = '400') => {
+                if (!fontFamily || fontFamily.includes(',') || fontFamily === 'system-ui') {
+                    return;
                 }
                 
-                updateValue(defaultVal);
+                // Check if font is already loaded
+                const existingLink = document.querySelector(`link[data-font-family="${fontFamily}"]`);
+                if (existingLink) {
+                    return;
+                }
+                
+                // Get font variants from Google Fonts data
+                const googleFonts = window.digifusionGoogleFonts || {};
+                const fontData = googleFonts[fontFamily];
+                
+                // Use API v1 format for better compatibility
+                const urlFontFamily = fontFamily.replace(/ /g, '+');
+                let fontUrl = `https://fonts.googleapis.com/css?family=${urlFontFamily}`;
+                
+                // Add weights if available
+                if (fontData && fontData.variants && fontData.variants.length > 0) {
+                    // Extract all numeric weights and include 400 as default
+                    const weights = new Set(['400']);
+                    
+                    fontData.variants.forEach(variant => {
+                        const weight = variant.replace('italic', '').trim();
+                        if (weight && /^\d+$/.test(weight)) {
+                            weights.add(weight);
+                        } else if (weight === 'regular') {
+                            weights.add('400');
+                        }
+                    });
+                    
+                    const weightList = Array.from(weights).sort((a, b) => parseInt(a) - parseInt(b)).join(',');
+                    fontUrl += `:${weightList}`;
+                } else {
+                    // Fallback to common weights
+                    fontUrl += ':400,700';
+                }
+                
+                fontUrl += '&display=swap';
+                
+                // Create and append link element
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = fontUrl;
+                link.setAttribute('data-font-family', fontFamily);
+                document.head.appendChild(link);
             };
             
-            // Determine if reset button should be disabled
-            const isResetDisabled = () => {
-                if (!this.defaultValues) return false;
+            // Font size units
+            const fontSizeUnits = [
+                { label: 'px', value: 'px' },
+                { label: 'em', value: 'em' },
+                { label: 'rem', value: 'rem' },
+                { label: 'vw', value: 'vw' },
+            ];
+            
+            // Line height units
+            const lineHeightUnits = [
+                { label: 'px', value: 'px' },
+                { label: 'em', value: 'em' },
+            ];
+            
+            // Letter spacing units
+            const letterSpacingUnits = [
+                { label: 'px', value: 'px' },
+                { label: 'em', value: 'em' },
+            ];
+            
+            // Font style options
+            const fontStyleOptions = [
+                { label: __('Normal', 'digifusion'), value: 'normal' },
+                { label: __('Italic', 'digifusion'), value: 'italic' },
+                { label: __('Oblique', 'digifusion'), value: 'oblique' },
+            ];
+            
+            // Text transform options
+            const textTransformOptions = [
+                { label: __('Default', 'digifusion'), value: '' },
+                { label: __('None', 'digifusion'), value: 'none' },
+                { label: __('Capitalize', 'digifusion'), value: 'capitalize' },
+                { label: __('Uppercase', 'digifusion'), value: 'uppercase' },
+                { label: __('Lowercase', 'digifusion'), value: 'lowercase' },
+            ];
+            
+            // Text decoration options
+            const textDecorationOptions = [
+                { label: __('Default', 'digifusion'), value: '' },
+                { label: __('None', 'digifusion'), value: 'none' },
+                { label: __('Underline', 'digifusion'), value: 'underline' },
+                { label: __('Overline', 'digifusion'), value: 'overline' },
+                { label: __('Line Through', 'digifusion'), value: 'line-through' },
+            ];
+            
+            // Update responsive value (fontSize, lineHeight, letterSpacing)
+            const updateResponsiveValue = (property, device, newValue) => {
+                const updatedValues = {
+                    ...values,
+                    [property]: {
+                        ...values[property],
+                        [device]: newValue
+                    }
+                };
                 
-                const defaultVal = this.defaultValues[activeDevice] !== undefined ? 
-                    this.defaultValues[activeDevice] : 
-                    (this.defaultValues.default !== undefined ? this.defaultValues.default : this.defaultValue);
+                setValues(updatedValues);
+                this.input.value = JSON.stringify(updatedValues);
                 
-                return safeValues[activeDevice] === defaultVal;
+                // Trigger the change event
+                const event = new Event('change');
+                this.input.dispatchEvent(event);
             };
             
             return (
-                <div className="digifusion-button-group-container">
+                <div className="digifusion-typography-control">
                     <div className="digifusion-control-header-wrap">
                         <div className="digifusion-control-left">
-                            <label className="digifusion-control-title customize-control-title">{this.control.params.label}</label>
-                            {this.isResponsive && (
-                                <Button 
-                                    className="digifusion-responsive-device-toggle"
-                                    onClick={() => window.digi.responsiveState.toggleDevice()}
-                                    aria-label={__(`Switch to ${window.digi.responsiveState.getNextDevice()} view`, "digifusion")}
-                                >
-                                    {window.digi.deviceIcons[activeDevice]}
-                                </Button>
-                            )}
+                            <label className="digifusion-control-title customize-control-title">
+                                {this.control.params.label}
+                            </label>
                         </div>
                         <div className="digifusion-control-right">
                             <Button
                                 isSmall
-                                icon="image-rotate"
-                                onClick={resetValue}
-                                disabled={isResetDisabled()}
-                                aria-label={__("Reset", "digifusion")}
-                                className="digifusion-reset"
+                                icon="edit"
+                                onClick={() => setIsOpen(!isOpen)}
+                                aria-label={__("Edit Typography", "digifusion")}
+                                className={`digifusion-edit ${isOpen ? 'is-pressed' : ''}`}
                             />
                         </div>
                     </div>
                     
-                    <div className="digifusion-button-group-options">
-                        <ToggleGroupControl
-                            value={safeValues[activeDevice]}
-                            onChange={updateValue}
-                            isBlock
-							hideLabelFromVision
-                            __next40pxDefaultSize={true}
-                            __nextHasNoMarginBottom={true}
-                        >
-                            {this.choices.map(option => (
-                                <ToggleGroupControlOption
-                                    key={option.value}
-                                    value={option.value}
-                                    label={option.label}
+                    {isOpen && (
+                        <div className="digifusion-typography-options">
+                            {/* Font Family */}
+                            <div className="digifusion-typography-row">
+                                <SelectControl
+                                    label={__('Font Family', 'digifusion')}
+                                    value={values.fontFamily || ''}
+                                    options={fontFamilyOptions}
+                                    onChange={(newValue) => updateTypographyValue('fontFamily', newValue)}
+                                    __next40pxDefaultSize={true}
+                                    __nextHasNoMarginBottom={true}
                                 />
-                            ))}
-                        </ToggleGroupControl>
-                    </div>
+                            </div>
+                            
+                            {/* Font Size */}
+                            <div className="digifusion-typography-row">
+                                <div className="digifusion-responsive-control">
+                                    <div className="digifusion-control-header-wrap">
+                                        <div className="digifusion-control-left">
+                                            <label className="digifusion-control-label">
+                                                {__('Font Size', 'digifusion')}
+                                            </label>
+                                            <Button 
+                                                className="digifusion-responsive-device-toggle"
+                                                onClick={() => window.digi?.responsiveState?.toggleDevice?.()}
+                                                aria-label={__(`Switch device view`, "digifusion")}
+                                            >
+                                                {window.digi?.deviceIcons?.[activeDevice] || activeDevice}
+                                            </Button>
+                                        </div>
+                                        <div className="digifusion-control-right">
+                                            <Button
+                                                isSmall
+                                                icon="image-rotate"
+                                                onClick={() => updateResponsiveValue('fontSize', activeDevice, this.defaults.fontSize?.[activeDevice])}
+                                                disabled={values.fontSize?.[activeDevice] === this.defaults.fontSize?.[activeDevice]}
+                                                aria-label={__("Reset", "digifusion")}
+                                                className="digifusion-reset"
+                                            />
+                                            <ToggleGroupControl
+                                                value={values.fontSizeUnit || 'px'}
+                                                onChange={(value) => updateTypographyValue('fontSizeUnit', value)}
+                                                isBlock
+                                                isSmall
+                                                hideLabelFromVision
+                                                aria-label={__("Select Units", "digifusion")}
+                                                __next40pxDefaultSize={true}
+                                                __nextHasNoMarginBottom={true}
+                                            >
+                                                {fontSizeUnits.map(unit => (
+                                                    <ToggleGroupControlOption
+                                                        key={unit.value}
+                                                        value={unit.value}
+                                                        label={unit.label}
+                                                    />
+                                                ))}
+                                            </ToggleGroupControl>
+                                        </div>
+                                    </div>
+                                    <RangeControl
+                                        value={values.fontSize?.[activeDevice]}
+                                        onChange={(newValue) => updateResponsiveValue('fontSize', activeDevice, newValue)}
+                                        min={0}
+                                        max={200}
+                                        step={values.fontSizeUnit === 'px' ? 1 : 0.1}
+                                        __next40pxDefaultSize={true}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Font Weight */}
+                            <div className="digifusion-typography-row">
+                                <SelectControl
+                                    label={__('Font Weight', 'digifusion')}
+                                    value={values.fontWeight || ''}
+                                    options={fontWeightOptions}
+                                    onChange={(newValue) => updateTypographyValue('fontWeight', newValue)}
+                                    __next40pxDefaultSize={true}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </div>
+                            
+                            {/* Font Style */}
+                            <div className="digifusion-typography-row">
+                                <SelectControl
+                                    label={__('Font Style', 'digifusion')}
+                                    value={values.fontStyle || 'normal'}
+                                    options={fontStyleOptions}
+                                    onChange={(newValue) => updateTypographyValue('fontStyle', newValue)}
+                                    __next40pxDefaultSize={true}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </div>
+                            
+                            {/* Text Transform */}
+                            <div className="digifusion-typography-row">
+                                <SelectControl
+                                    label={__('Text Transform', 'digifusion')}
+                                    value={values.textTransform || ''}
+                                    options={textTransformOptions}
+                                    onChange={(newValue) => updateTypographyValue('textTransform', newValue)}
+                                    __next40pxDefaultSize={true}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </div>
+                            
+                            {/* Text Decoration */}
+                            <div className="digifusion-typography-row">
+                                <SelectControl
+                                    label={__('Text Decoration', 'digifusion')}
+                                    value={values.textDecoration || ''}
+                                    options={textDecorationOptions}
+                                    onChange={(newValue) => updateTypographyValue('textDecoration', newValue)}
+                                    __next40pxDefaultSize={true}
+                                    __nextHasNoMarginBottom={true}
+                                />
+                            </div>
+                            
+                            {/* Line Height */}
+                            <div className="digifusion-typography-row">
+                                <div className="digifusion-responsive-control">
+                                    <div className="digifusion-control-header-wrap">
+                                        <div className="digifusion-control-left">
+                                            <label className="digifusion-control-label">
+                                                {__('Line Height', 'digifusion')}
+                                            </label>
+                                            <Button 
+                                                className="digifusion-responsive-device-toggle"
+                                                onClick={() => window.digi?.responsiveState?.toggleDevice?.()}
+                                                aria-label={__(`Switch device view`, "digifusion")}
+                                            >
+                                                {window.digi?.deviceIcons?.[activeDevice] || activeDevice}
+                                            </Button>
+                                        </div>
+                                        <div className="digifusion-control-right">
+                                            <Button
+                                                isSmall
+                                                icon="image-rotate"
+                                                onClick={() => updateResponsiveValue('lineHeight', activeDevice, this.defaults.lineHeight?.[activeDevice])}
+                                                disabled={values.lineHeight?.[activeDevice] === this.defaults.lineHeight?.[activeDevice]}
+                                                aria-label={__("Reset", "digifusion")}
+                                                className="digifusion-reset"
+                                            />
+                                            <ToggleGroupControl
+                                                value={values.lineHeightUnit || 'em'}
+                                                onChange={(value) => updateTypographyValue('lineHeightUnit', value)}
+                                                isBlock
+                                                isSmall
+                                                hideLabelFromVision
+                                                aria-label={__("Select Units", "digifusion")}
+                                                __next40pxDefaultSize={true}
+                                                __nextHasNoMarginBottom={true}
+                                            >
+                                                {lineHeightUnits.map(unit => (
+                                                    <ToggleGroupControlOption
+                                                        key={unit.value}
+                                                        value={unit.value}
+                                                        label={unit.label}
+                                                    />
+                                                ))}
+                                            </ToggleGroupControl>
+                                        </div>
+                                    </div>
+                                    <RangeControl
+                                        value={values.lineHeight?.[activeDevice]}
+                                        onChange={(newValue) => updateResponsiveValue('lineHeight', activeDevice, newValue)}
+                                        min={0}
+                                        max={values.lineHeightUnit === 'px' ? 200 : 3}
+                                        step={values.lineHeightUnit === 'px' ? 1 : 0.1}
+                                        __next40pxDefaultSize={true}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Letter Spacing */}
+                            <div className="digifusion-typography-row">
+                                <div className="digifusion-responsive-control">
+                                    <div className="digifusion-control-header-wrap">
+                                        <div className="digifusion-control-left">
+                                            <label className="digifusion-control-label">
+                                                {__('Letter Spacing', 'digifusion')}
+                                            </label>
+                                            <Button 
+                                                className="digifusion-responsive-device-toggle"
+                                                onClick={() => window.digi?.responsiveState?.toggleDevice?.()}
+                                                aria-label={__(`Switch device view`, "digifusion")}
+                                            >
+                                                {window.digi?.deviceIcons?.[activeDevice] || activeDevice}
+                                            </Button>
+                                        </div>
+                                        <div className="digifusion-control-right">
+                                            <Button
+                                                isSmall
+                                                icon="image-rotate"
+                                                onClick={() => updateResponsiveValue('letterSpacing', activeDevice, this.defaults.letterSpacing?.[activeDevice])}
+                                                disabled={values.letterSpacing?.[activeDevice] === this.defaults.letterSpacing?.[activeDevice]}
+                                                aria-label={__("Reset", "digifusion")}
+                                                className="digifusion-reset"
+                                            />
+                                            <ToggleGroupControl
+                                                value={values.letterSpacingUnit || 'px'}
+                                                onChange={(value) => updateTypographyValue('letterSpacingUnit', value)}
+                                                isBlock
+                                                isSmall
+                                                hideLabelFromVision
+                                                aria-label={__("Select Units", "digifusion")}
+                                                __next40pxDefaultSize={true}
+                                                __nextHasNoMarginBottom={true}
+                                            >
+                                                {letterSpacingUnits.map(unit => (
+                                                    <ToggleGroupControlOption
+                                                        key={unit.value}
+                                                        value={unit.value}
+                                                        label={unit.label}
+                                                    />
+                                                ))}
+                                            </ToggleGroupControl>
+                                        </div>
+                                    </div>
+                                    <RangeControl
+                                        value={values.letterSpacing?.[activeDevice]}
+                                        onChange={(newValue) => updateResponsiveValue('letterSpacing', activeDevice, newValue)}
+                                        min={-50}
+                                        max={200}
+                                        step={values.letterSpacingUnit === 'px' ? 1 : 0.1}
+                                        __next40pxDefaultSize={true}
+                                        __nextHasNoMarginBottom={true}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
         
         // Use createRoot instead of render
         const root = createRoot(this.container);
-        root.render(<ButtonGroupComponent />);
+        root.render(<TypographyComponent />);
     }
 }

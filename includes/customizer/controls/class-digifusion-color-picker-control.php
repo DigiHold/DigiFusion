@@ -30,6 +30,13 @@ class DigiFusion_Color_Picker_Control extends DigiFusion_Control_Base {
 	public $alpha = false;
 
 	/**
+	 * Multiple colors configuration.
+	 *
+	 * @var array
+	 */
+	public $colors = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
@@ -42,6 +49,10 @@ class DigiFusion_Color_Picker_Control extends DigiFusion_Control_Base {
 		if ( isset( $args['alpha'] ) ) {
 			$this->alpha = $args['alpha'];
 		}
+
+		if ( isset( $args['colors'] ) ) {
+			$this->colors = $args['colors'];
+		}
 	}
 
 	/**
@@ -52,6 +63,7 @@ class DigiFusion_Color_Picker_Control extends DigiFusion_Control_Base {
 	protected function get_control_data() {
 		$data = parent::get_control_data();
 		$data['alpha'] = $this->alpha;
+		$data['colors'] = $this->colors;
 		return $data;
 	}
 
@@ -65,7 +77,8 @@ class DigiFusion_Color_Picker_Control extends DigiFusion_Control_Base {
 		<div class="digifusion-color-picker-control">
 			<div class="digifusion-color-picker-container" 
 				data-control-id="<?php echo esc_attr( $this->id ); ?>"
-				data-alpha="<?php echo esc_attr( $this->alpha ? 'true' : 'false' ); ?>">
+				data-alpha="<?php echo esc_attr( $this->alpha ? 'true' : 'false' ); ?>"
+				data-colors="<?php echo esc_attr( json_encode( $this->colors ) ); ?>">
 			</div>
 			<input
 				id="<?php echo esc_attr( $input_id ); ?>"

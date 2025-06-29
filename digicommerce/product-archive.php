@@ -22,7 +22,7 @@ $allowed_html = array(
 // Check if a custom builder template should be used for DigiCommerce shop
 if ( ! function_exists( 'digifusion_digi_shop' ) || ! digifusion_digi_shop() ) :
 	?>
-	<div class="digicommerce-archive digicommerce py-12 w-full">
+	<div class="digicommerce-archive digicommerce w-full py-10 md:py-16">
 		<?php if ( have_posts() ) : ?>
 			<!-- Products Grid -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

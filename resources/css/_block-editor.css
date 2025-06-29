@@ -9,7 +9,7 @@ html :where(.editor-styles-wrapper) {
 body {
     b,
     strong {
-        color: var(--digi-dark-blue);
+        color: var(--digi-charcoal);
     }
 }
 

@@ -144,8 +144,8 @@
 }
 
 .digi-author-social-link:hover {
-    background-color: var(--digi-silver);
-    color: var(--digi-charcoal);
+    background-color: var(--digi-ruby);
+    color: #fff;
 }
 
 .digi-social-icon {

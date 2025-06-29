@@ -17,9 +17,8 @@ DigiFusion is a modern, lightweight, and fully customizable WordPress theme buil
 
 Key Features:
 * Lightning-fast performance
-* Fully customizable with powerful builder features
-* Custom header and footer builder
-* Block-based design with custom block patterns
+* Fully customizable
+* Block-based design
 * SEO optimized
 * Mobile responsive
 * Translation ready
@@ -27,6 +26,7 @@ Key Features:
 * Multiple layout options
 * Custom colors and typography
 * WooCommerce compatible
+* DigiCommerce compatible
 
 == Installation ==
 
@@ -38,15 +38,15 @@ Key Features:
 
 = Does this theme support the full site editor? =
 
-While DigiFusion is not a block theme, it includes powerful builder features and extensive block support to provide similar flexibility.
+While DigiFusion is not a block theme, its pro version includes powerful builder features and extensive block support to provide similar flexibility.
 
 = Is this theme compatible with page builders? =
 
-Yes, DigiFusion works with popular page builders and includes its own builder system for headers and footers.
+Yes, DigiFusion works with popular page builders and includes its own site builder system in its pro version.
 
 = Does the theme support WooCommerce? =
 
-Yes, DigiFusion is fully compatible with WooCommerce and includes specialized blocks for e-commerce functionality.
+Yes, DigiFusion is fully compatible with WooCommerce.
 
 = Is the theme translation ready? =
 
@@ -56,7 +56,6 @@ Yes, DigiFusion is fully translation ready and can be translated into any langua
 
 = 1.0.0 =
 * Initial release
-* Custom header and footer builder
 * Block-based design
 * Performance optimizations
 * Mobile responsive design
@@ -79,13 +78,19 @@ All images and resources used in this theme are either created by the theme auth
 * Icons: Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 * Font: Default system fonts
 
+Screenshot Resources:
+* Hero background image: Licensed from Envato Elements - https://elements.envato.com/ (Licensed for use in theme screenshots and promotional materials)
+* Feature icons: Licensed from Flaticon - https://www.flaticon.com/ (Licensed for commercial use with attribution)
+
+Note: The images and icons used in the theme screenshot are for demonstration purposes only and are not included with the theme download. Users must obtain their own licensed images and icons for their websites.
+
 == Theme Support ==
 
 For theme support and documentation, please visit: https://digihold.me/support/
 
 == Copyright ==
 
-DigiFusion WordPress Theme, Copyright 2024 DigiHold
+DigiFusion WordPress Theme, Copyright 2025 DigiHold
 DigiFusion is distributed under the terms of the GNU GPL
 
 This program is free software: you can redistribute it and/or modify

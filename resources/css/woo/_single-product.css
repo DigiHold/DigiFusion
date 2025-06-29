@@ -1,0 +1,152 @@
+/* Single Product */
+.woocommerce div.product {
+    .product_title {
+        margin-bottom: 0.5rem;
+    }
+
+    form.cart {
+        display: flex;
+        gap: 0.5rem;
+
+        &::before,
+        &::after {
+            display: none;
+        }
+
+        div.quantity {
+            float: none;
+            margin: 0;
+        }
+
+        .button {
+            float: none;
+            flex: 1;
+            transition: all 300ms ease-in-out;
+        }
+
+        &.variations_form {
+            flex-direction: column;
+
+            .variations {
+                margin-bottom: 0;
+            }
+
+            .single_variation_wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .woocommerce-variation-add-to-cart {
+                display: flex;
+                gap: 0.5rem;
+            }
+        }
+    }
+}
+
+.woocommerce:where(body:not(.woocommerce-uses-block-theme)) div.product {
+    p.price,
+    span.price {
+        color: var(--digi-green);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+}
+
+.woocommerce .quantity .qty {
+    padding: 0;
+    height: 100%;
+    min-height: 40px;
+}
+
+/* Stars rating */
+.woocommerce .star-rating span::before,
+.woocommerce p.stars a {
+    color: #fdbd56;
+}
+
+/* Product Tabs */
+.woocommerce #content div.product .woocommerce-tabs ul.tabs::after,
+.woocommerce div.product .woocommerce-tabs ul.tabs::after,
+.woocommerce-page #content div.product .woocommerce-tabs ul.tabs::after,
+.woocommerce-page div.product .woocommerce-tabs ul.tabs::after {
+    display: none;
+}
+
+.woocommerce div.product .woocommerce-tabs {
+    ul.tabs {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin: 0 0 2rem 0;
+        padding: 0;
+        list-style: none;
+        position: relative;
+        overflow: inherit;
+
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            right: 0;
+            height: 2px;
+            background-color: var(--digi-gray);
+            border-radius: 2px;
+            border: 0;
+        }
+
+        li {
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            border-radius: 0;
+            position: relative;
+
+            &::before,
+            &::after {
+                display: none;
+            }
+
+            a {
+                display: block;
+                padding: 1rem 1.5rem;
+                color: var(--digi-dark-gray);
+                font-weight: 500;
+                font-size: 0.95rem;
+                text-decoration: none;
+                border: none;
+                border-radius: 0.5rem 0.5rem 0 0;
+                background: none;
+                transition: all 0.2s ease;
+                position: relative;
+
+                &:hover {
+                    color: var(--digi-charcoal);
+                    background-color: #f9fafb;
+                }
+            }
+
+            &.active {
+                a {
+                    color: var(--digi-crimson);
+                    background-color: #ffffff;
+                    font-weight: 600;
+
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        bottom: -2px;
+                        left: 0;
+                        right: 0;
+                        height: 2px;
+                        background-color: var(--digi-crimson);
+                        border-radius: 2px;
+                    }
+                }
+            }
+        }
+    }
+}

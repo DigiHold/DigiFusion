@@ -27,16 +27,13 @@ function digifusion_load_customizer_controls() {
     if ( class_exists( 'WP_Customize_Control' ) ) {
         // Include control classes
         require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-control-base.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-image-control.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-dimensions-control.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-range-control.php';
         require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-color-picker-control.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-box-shadow-control.php';
-		require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-rich-text-control.php';
         require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-toggle-control.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-text-control.php';
         require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-select-control.php';
-        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-button-group-control.php';
+        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-typography-control.php';
+
+		// Include section classes
+        require_once get_template_directory() . '/includes/customizer/controls/class-digifusion-pro-section.php';
     }
 }
 add_action( 'customize_register', 'digifusion_load_customizer_controls', 0 );

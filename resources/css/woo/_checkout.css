@@ -1,0 +1,154 @@
+label.woocommerce-form__label-for-checkbox {
+    gap: 0.5rem;
+    margin: 0;
+}
+
+/* Notice */
+.woocommerce ul.woocommerce-error {
+    align-items: flex-start;
+    flex-direction: column;
+
+    &::before {
+        display: none;
+    }
+}
+
+/* Login */
+.woocommerce-checkout form.login {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    p:first-child {
+        margin: 0;
+    }
+
+    .woocommerce-form-login__rememberme {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+    }
+}
+
+/* Coupon */
+.woocommerce form.checkout_coupon {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: stretch;
+
+    input {
+        flex: 1;
+    }
+
+    .coupon-error-notice {
+        grid-column: 1 / -1;
+        margin: 0;
+    }
+}
+
+/* Checkout wrapper */
+.digi-checkout-wrapper {
+    display: flex;
+    gap: 2rem;
+
+    .col2-set {
+        flex: 1;
+    }
+}
+
+.digi-order-review-wrapper {
+    flex: 1;
+    max-width: 500px;
+}
+
+/* Billing/Shipping forms */
+.woocommerce-billing-fields__field-wrapper,
+.woocommerce-shipping-fields__field-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 1rem;
+}
+
+.woocommerce-billing-fields__field-wrapper {
+    #billing_address_1_field,
+    #billing_address_2_field {
+        grid-column: 1 / -1;
+    }
+}
+
+.woocommerce-shipping-fields__field-wrapper {
+    #shipping_address_1_field,
+    #shipping_address_2_field {
+        grid-column: 1 / -1;
+    }
+}
+
+.woocommerce-account-fields,
+.woocommerce-additional-fields {
+    margin-top: 1rem;
+}
+
+/* Order review */
+.woocommerce,
+.woocommerce-page {
+    #place_order,
+    #payment #place_order {
+        float: none;
+    }
+}
+
+/* Payment method */
+#add_payment_method #payment,
+.woocommerce-cart #payment,
+.woocommerce-checkout #payment {
+    background-color: var(--digi-silver);
+}
+
+#add_payment_method #payment div.payment_box,
+.woocommerce-cart #payment div.payment_box,
+.woocommerce-checkout #payment div.payment_box {
+    background-color: #e3e9eb;
+}
+
+#add_payment_method #payment div.payment_box::before,
+.woocommerce-cart #payment div.payment_box::before,
+.woocommerce-checkout #payment div.payment_box::before {
+    border-bottom-color: #e3e9eb;
+}
+
+.payment_methods fieldset {
+    margin: 0;
+    border: 0;
+    padding: 0;
+
+    &#wc-stripe-upe-form {
+        margin-bottom: 1rem;
+    }
+}
+
+.woocommerce #payment ul.payment_methods {
+    li label {
+        display: inline-flex;
+        margin: 0;
+    }
+
+    .woocommerce-SavedPaymentMethods-saveNew {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+        input[type="checkbox"] {
+            margin: 0.25rem 0 0;
+            width: 1.5rem !important;
+        }
+
+        label {
+            margin: 0;
+        }
+    }
+}
+
+.ppc-button-wrapper {
+    margin-top: 1rem;
+}

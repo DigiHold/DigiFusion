@@ -3,11 +3,28 @@
 }
 
 .digi-page-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     padding: 2rem 0;
+}
+
+.digi-page-header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 50%;
 }
 
 .digi-page-title {
     font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+}
+
+.digi-page-description p {
     margin: 0;
     color: #fff;
 }
@@ -22,4 +39,33 @@
     width: 4rem;
     height: 4rem;
     border-radius: 50%;
+}
+
+.digi-breadcrumbs {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 50%;
+    color: #fff;
+
+    a {
+        color: #fff;
+
+        &:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
+
+    .digi-breadcrumb-item {
+        flex-shrink: 0;
+
+        &:last-child {
+            flex-shrink: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+    }
 }

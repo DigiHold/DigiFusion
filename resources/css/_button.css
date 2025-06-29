@@ -1,4 +1,5 @@
 button.digi,
+.digi-button,
 input[type="submit"] {
     position: relative;
     display: flex;

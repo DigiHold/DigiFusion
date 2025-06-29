@@ -26,6 +26,11 @@ body {
     margin-right: auto;
 }
 
+body.elementor-page .site-main .container {
+    width: 100%;
+    max-width: 100%;
+}
+
 .digi-page-wrapper {
     position: relative;
     display: flex;

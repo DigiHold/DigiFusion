@@ -55,7 +55,7 @@ if ( ! function_exists( 'digifusion_single_post' ) || ! digifusion_single_post()
 								'<a href="%s" title="%s" %s>%s</a>',
 								esc_url(get_author_posts_url(get_the_author_meta('ID'))),
 								esc_attr(get_the_author_meta('display_name')),
-								digiblocks_get_schema_property('author'),
+								digifusion_get_schema_property('author'),
 								esc_html(get_the_author_meta('display_name'))
 							)
 						);
@@ -158,32 +158,64 @@ if ( ! function_exists( 'digifusion_single_post' ) || ! digifusion_single_post()
 							</a>
 						</div>
 						<div class="digi-author-bio" <?php echo wp_kses_post( digifusion_get_schema_property('description') ); ?>><?php echo wp_kses_post(get_the_author_meta('description')); ?></div>
-						<ul class="digi-author-social">
-							<li>
-								<a href="https://www.linkedin.com/in/lecocq-nicolas/" 
-									class="digi-author-social-link digi-linkedin" 
-									target="_blank" 
-									aria-label="<?php esc_attr_e('Author\'s LinkedIn Profile', 'digifusion'); ?>">
-									<svg xmlns="http://www.w3.org/2000/svg" height="16" width="14.25" viewBox="0 0 448 512" class="digi-social-icon"><path d="M100.3 448H7.4V148.9h92.9zM53.8 108.1C24.1 108.1 0 83.5 0 53.8a53.8 53.8 0 0 1 107.6 0c0 29.7-24.1 54.3-53.8 54.3zM447.9 448h-92.7V302.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.7V448h-92.8V148.9h89.1v40.8h1.3c12.4-23.5 42.7-48.3 87.9-48.3 94 0 111.3 61.9 111.3 142.3V448z"/></svg>
-								</a>
-							</li>
-							<li>
-								<a href="https://www.facebook.com/nl.nicolaslecocq/" 
-									class="digi-author-social-link digi-facebook" 
-									target="_blank" 
-									aria-label="<?php esc_attr_e('Author\'s Facebook Profile', 'digifusion'); ?>">
-									<svg xmlns="http://www.w3.org/2000/svg" height="16" width="10.75" viewBox="0 0 320 512" class="digi-social-icon"><path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"/></svg>
-								</a>
-							</li>
-							<li>
-								<a href="https://www.youtube.com/@DigiHoldWP" 
-									class="digi-author-social-link digi-youtube" 
-									target="_blank" 
-									aria-label="<?php esc_attr_e('Author\'s YouTube Channel', 'digifusion'); ?>">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="16" class="digi-social-icon"><path d="M549.7 124.1c-6.3-23.7-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5c-23.5 6.3-42 24.9-48.3 48.6-11.4 42.9-11.4 132.3-11.4 132.3s0 89.4 11.4 132.3c6.3 23.7 24.8 41.5 48.3 47.8C117.2 448 288 448 288 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zm-317.5 213.5V175.2l142.7 81.2-142.7 81.2z"></path></svg>
-								</a>
-							</li>
-						</ul>
+						<?php
+						// Get author meta for social links
+						$author_linkedin = get_the_author_meta('linkedin');
+						$author_facebook = get_the_author_meta('facebook'); 
+						$author_youtube = get_the_author_meta('youtube');
+						$author_twitter = get_the_author_meta('twitter');
+						$author_website = get_the_author_meta('user_url');
+
+						if ($author_linkedin || $author_facebook || $author_youtube || $author_twitter || $author_website) :
+							?>
+							<ul class="digi-author-social">
+								<?php
+								if ($author_linkedin) : ?>
+									<li>
+										<a href="<?php echo esc_url($author_linkedin); ?>" 
+											class="digi-author-social-link digi-linkedin" 
+											target="_blank" 
+											aria-label="<?php esc_attr_e('Author\'s LinkedIn Profile', 'digifusion'); ?>">
+											<svg xmlns="http://www.w3.org/2000/svg" height="16" width="14.25" viewBox="0 0 448 512" class="digi-social-icon"><path d="M100.3 448H7.4V148.9h92.9zM53.8 108.1C24.1 108.1 0 83.5 0 53.8a53.8 53.8 0 0 1 107.6 0c0 29.7-24.1 54.3-53.8 54.3zM447.9 448h-92.7V302.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.7V448h-92.8V148.9h89.1v40.8h1.3c12.4-23.5 42.7-48.3 87.9-48.3 94 0 111.3 61.9 111.3 142.3V448z"/></svg>
+										</a>
+									</li>
+								<?php endif;
+								
+								if ($author_facebook) : ?>
+									<li>
+										<a href="<?php echo esc_url($author_facebook); ?>" 
+											class="digi-author-social-link digi-facebook" 
+											target="_blank" 
+											aria-label="<?php esc_attr_e('Author\'s Facebook Profile', 'digifusion'); ?>">
+											<svg xmlns="http://www.w3.org/2000/svg" height="16" width="10.75" viewBox="0 0 320 512" class="digi-social-icon"><path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"/></svg>
+										</a>
+									</li>
+								<?php endif;
+								
+								if ($author_youtube) : ?>
+									<li>
+										<a href="<?php echo esc_url($author_youtube); ?>" 
+											class="digi-author-social-link digi-youtube" 
+											target="_blank" 
+											aria-label="<?php esc_attr_e('Author\'s YouTube Channel', 'digifusion'); ?>">
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="16" class="digi-social-icon"><path d="M549.7 124.1c-6.3-23.7-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5c-23.5 6.3-42 24.9-48.3 48.6-11.4 42.9-11.4 132.3-11.4 132.3s0 89.4 11.4 132.3c6.3 23.7 24.8 41.5 48.3 47.8C117.2 448 288 448 288 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zm-317.5 213.5V175.2l142.7 81.2-142.7 81.2z"></path></svg>
+										</a>
+									</li>
+								<?php endif;
+								
+								if ($author_twitter) : ?>
+									<li>
+										<a href="<?php echo esc_url($author_twitter); ?>" 
+											class="digi-author-social-link digi-twitter" 
+											target="_blank" 
+											aria-label="<?php esc_attr_e('Author\'s Twitter Profile', 'digifusion'); ?>">
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" class="digi-social-icon"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+										</a>
+									</li>
+								<?php endif; ?>
+							</ul>
+							<?php
+						endif; ?>
 					</div>
 					<?php
 					/**

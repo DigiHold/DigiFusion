@@ -2,35 +2,127 @@ document.addEventListener('DOMContentLoaded', function() {
     // --------
     // Mobile
     // --------
-    const mobile = document.querySelector('.menu__toggle');
-    const closeButton = document.querySelector('.menu__toggle_close > .menu__toggle');
+    const mobile = document.querySelector('.digi-menu-toggle');
     const body = document.body;
+    const nav = document.querySelector('.digi-header-nav');
 
-    if (mobile && closeButton) {
-        // Ouvrir le menu mobile
+    if (mobile && nav) {
         mobile.addEventListener('click', function () {
-            body.classList.add('mopen');
-        });
+            if (body.classList.contains('mopen')) {
+				body.classList.remove('mopen');
 
-        // Fermer le menu mobile
-        closeButton.addEventListener('click', function () {
-            body.classList.remove('mopen');
+                // Closing - slide up then remove class
+                slideUp(nav, 300, () => {
+                    nav.classList.remove('nav-open');
+                });
+            } else {
+                body.classList.add('mopen');
+
+                // Opening - add class then slide down
+                nav.classList.add('nav-open');
+                slideDown(nav, 300);
+            }
         });
+    }
+
+    // Slide down function
+    function slideDown(element, duration) {
+        element.style.height = '0px';
+        element.style.overflow = 'hidden';
+        element.style.transition = `height ${duration}ms ease-in-out`;
+        
+        // Get the natural height
+        const naturalHeight = element.scrollHeight;
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            element.style.height = naturalHeight + 'px';
+        });
+        
+        // Clean up after animation
+        setTimeout(() => {
+            element.style.height = '';
+            element.style.overflow = '';
+            element.style.transition = '';
+        }, duration);
+    }
+
+    // Slide up function
+    function slideUp(element, duration, callback) {
+        const currentHeight = element.scrollHeight;
+        element.style.height = currentHeight + 'px';
+        element.style.overflow = 'hidden';
+        element.style.transition = `height ${duration}ms ease-in-out`;
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            element.style.height = '0px';
+        });
+        
+        // Clean up after animation
+        setTimeout(() => {
+            element.style.height = '';
+            element.style.overflow = '';
+            element.style.transition = '';
+            if (callback) callback();
+        }, duration);
     }
 
     // --------
     // Mobile sub menu
     // --------
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
+    const navArrows = document.querySelectorAll('.nav-arrow');
 
-    if (submenuToggles) {
-        submenuToggles.forEach(function (toggle) {
-            toggle.addEventListener('click', function (e) {
+    if (navArrows) {
+        navArrows.forEach(function (arrow) {
+            arrow.addEventListener('click', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
 
                 const parentLi = this.closest('li');
+                const subMenu = parentLi.querySelector('.sub-menu');
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
 
-                parentLi.classList.toggle('submenu-open');
+                if (!subMenu) return;
+
+                // Close other submenus at the same level first
+                const parentUl = parentLi.parentElement;
+                const siblingItems = parentUl.querySelectorAll(':scope > li.submenu-open');
+                
+                siblingItems.forEach(function(sibling) {
+                    if (sibling !== parentLi) {
+                        const siblingSubMenu = sibling.querySelector('.sub-menu');
+                        const siblingArrow = sibling.querySelector('.nav-arrow');
+                        
+                        if (siblingSubMenu && siblingArrow) {
+                            sibling.classList.remove('submenu-open');
+                            siblingArrow.setAttribute('aria-expanded', 'false');
+                            slideUp(siblingSubMenu, 300);
+                        }
+                    }
+                });
+
+                // Toggle current submenu
+                if (isExpanded) {
+                    // Closing - slide up then remove class
+                    slideUp(subMenu, 300, () => {
+                        parentLi.classList.remove('submenu-open');
+                    });
+                    this.setAttribute('aria-expanded', 'false');
+                } else {
+                    // Opening - add class then slide down
+                    parentLi.classList.add('submenu-open');
+                    this.setAttribute('aria-expanded', 'true');
+                    slideDown(subMenu, 300);
+                }
+            });
+
+            // Handle keyboard navigation
+            arrow.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
             });
         });
     }

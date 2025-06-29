@@ -209,6 +209,16 @@ function digifusion_enqueue_scripts() {
 		true
 	);
 
+	// If DigiCommerce is active, enqueue its styles
+	if ( class_exists( 'DigiCommerce' ) ) {
+		wp_enqueue_style(
+			'digicommerce-style',
+			DIGIFUSION_URI . 'assets/css/digicommerce.css',
+			array(),
+			DIGIFUSION_VERSION
+		);
+	}
+
 	// Add comment-reply script if needed
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
@@ -277,11 +287,32 @@ require_once DIGIFUSION_DIR . 'includes/class-digifusion-dashboard.php';
 // Include schema markup
 require_once DIGIFUSION_DIR . 'includes/class-digifusion-schema-markup.php';
 
-// Include Header & Footer Builder
-//require_once DIGIFUSION_DIR . 'includes/class-digifusion-builder.php';
+// Include breadcrumbs
+require_once DIGIFUSION_DIR . 'includes/class-digifusion-breadcrumbs.php';
+
+// Include custom navigation walker
+require_once DIGIFUSION_DIR . 'includes/class-digifusion-nav-walker.php';
+
+// Include page settings
+require_once DIGIFUSION_DIR . 'includes/class-digifusion-page-settings.php';
 
 // Include Customizer
 require_once DIGIFUSION_DIR . 'includes/customizer/customizer-loader.php';
+
+// Include dynamic CSS
+require_once DIGIFUSION_DIR . 'includes/class-digifusion-dynamic-css.php';
+
+// Include fonts
+require_once DIGIFUSION_DIR . 'includes/class-digifusion-fonts.php';
+
+// Initialize fonts handler
+DigiFusion_Fonts::get_instance();
+
+// If WooCommerce active
+if ( class_exists( 'WooCommerce' ) ) {
+	// Include WooCommerce compatibility
+	require_once DIGIFUSION_DIR . 'includes/class-digifusion-woocommerce.php';
+}
 
 /**
  * Add custom body classes.
@@ -352,78 +383,3 @@ function digifusion_the_posts_navigation() {
 		echo '</div>';
 	}
 }
-
-/**
- * Add social media fields to user profile.
- *
- * @param WP_User $user The user object.
- */
-function digifusion_add_social_fields( $user ) {
-	?>
-	<h3><?php esc_html_e( 'Socials', 'digifusion' ); ?></h3>
-	<table class="form-table">
-		<tr>
-			<th><label for="facebook"><?php esc_html_e( 'Facebook', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="facebook" id="facebook" value="<?php echo esc_attr( get_user_meta( $user->ID, 'facebook', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-		<tr>
-			<th><label for="twitter"><?php esc_html_e( 'Twitter', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="twitter" id="twitter" value="<?php echo esc_attr( get_user_meta( $user->ID, 'twitter', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-		<tr>
-			<th><label for="instagram"><?php esc_html_e( 'Instagram', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="instagram" id="instagram" value="<?php echo esc_attr( get_user_meta( $user->ID, 'instagram', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-		<tr>
-			<th><label for="linkedin"><?php esc_html_e( 'LinkedIn', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="linkedin" id="linkedin" value="<?php echo esc_attr( get_user_meta( $user->ID, 'linkedin', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-		<tr>
-			<th><label for="youtube"><?php esc_html_e( 'YouTube', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="youtube" id="youtube" value="<?php echo esc_attr( get_user_meta( $user->ID, 'youtube', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-		<tr>
-			<th><label for="github"><?php esc_html_e( 'GitHub', 'digifusion' ); ?></label></th>
-			<td>
-				<input type="url" name="github" id="github" value="<?php echo esc_attr( get_user_meta( $user->ID, 'github', true ) ); ?>" class="regular-text" />
-			</td>
-		</tr>
-	</table>
-	<?php
-}
-add_action( 'show_user_profile', 'digifusion_add_social_fields' );
-add_action( 'edit_user_profile', 'digifusion_add_social_fields' );
-
-/**
- * Save social media fields.
- *
- * @param int $user_id The user ID.
- * @return bool
- */
-function digifusion_save_social_fields( $user_id ) {
-	if ( ! current_user_can( 'edit_user', $user_id ) ) {
-		return false;
-	}
-
-	$social_fields = array( 'facebook', 'twitter', 'instagram', 'linkedin', 'youtube', 'github' );
-
-	foreach ( $social_fields as $field ) {
-		if ( isset( $_POST[ $field ] ) ) {
-			update_user_meta( $user_id, $field, esc_url_raw( wp_unslash( $_POST[ $field ] ) ) );
-		}
-	}
-
-	return true;
-}
-add_action( 'personal_options_update', 'digifusion_save_social_fields' );
-add_action( 'edit_user_profile_update', 'digifusion_save_social_fields' );

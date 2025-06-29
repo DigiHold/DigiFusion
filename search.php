@@ -30,7 +30,7 @@ if ( ! function_exists( 'digifusion_search' ) || ! digifusion_search() ) :
 
 		if ( have_posts() ) :
 			while ( have_posts() ) : the_post();
-				echo '<a href="' . get_the_permalink() . '" class="digi-search-item">' . get_the_title() . '</a>';
+				echo '<a href="' . get_the_permalink() . '" class="digi-search-item">' . esc_html( get_the_title() ) . '</a>';
 			endwhile;
 		else:
 			echo '<p class="digi-no-results">' . esc_html__('No results found.', 'digifusion') . '</p>';
