@@ -106,7 +106,7 @@ class DigiFusion_Breadcrumbs {
 	private function display_woocommerce_breadcrumbs( $args ) {
 		if ( function_exists( 'woocommerce_breadcrumb' ) ) {
 			// Build the wrapper with schema markup
-			$wrap_before = '<nav class="digi-breadcrumbs woocommerce-breadcrumb" aria-label="' . esc_attr__( 'Breadcrumb', 'digifusion' ) . '" ' . wp_kses_post( digifusion_get_schema_markup( 'breadcrumb' ) ) . '>';
+			$wrap_before = '<nav class="digi-breadcrumbs" aria-label="' . esc_attr__( 'Breadcrumb', 'digifusion' ) . '" ' . wp_kses_post( digifusion_get_schema_markup( 'breadcrumb' ) ) . '>';
 			
 			// Build the item wrapper with schema markup
 			$before = '<span class="digi-breadcrumb-item" ' . wp_kses_post( digifusion_get_schema_markup( 'list-item' ) ) . '>';

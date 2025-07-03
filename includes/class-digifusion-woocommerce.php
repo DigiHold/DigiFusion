@@ -33,23 +33,31 @@ class DigiFusion_WooCommerce {
 		
 		// Add WooCommerce customizer settings
 		add_action( 'customize_register', array( $this, 'customizer_settings' ), 15 );
+
+		// Add dynamic CSS generation hook
+		add_action( 'digifusion_dynamic_css_generate', array( $this, 'generate_cart_colors_css' ) );
+
+		// Add css to dynamic style
+		add_action( 'customize_save_after', array( $this, 'maybe_regenerate_css_on_cart_colors' ) );
 		
 		// Enqueue WooCommerce assets
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		
 		// Add cart icon to header
-		add_action( 'digifusion_after_header_menu_links', array( $this, 'add_cart_icon' ) );
+		add_action( 'digifusion_after_header_menu_links', array( $this, 'render_cart_icon' ) );
 		
-		// AJAX handlers
+		// AJAX handlers for cart functionality
 		add_action( 'wp_ajax_digifusion_get_cart_data', array( $this, 'ajax_get_cart_data' ) );
 		add_action( 'wp_ajax_nopriv_digifusion_get_cart_data', array( $this, 'ajax_get_cart_data' ) );
+		
+		add_action( 'wp_ajax_digifusion_get_cart_items', array( $this, 'ajax_get_cart_items' ) );
+		add_action( 'wp_ajax_nopriv_digifusion_get_cart_items', array( $this, 'ajax_get_cart_items' ) );
+		
+		add_action( 'wp_ajax_digifusion_update_cart_item', array( $this, 'ajax_update_cart_item' ) );
+		add_action( 'wp_ajax_nopriv_digifusion_update_cart_item', array( $this, 'ajax_update_cart_item' ) );
+		
 		add_action( 'wp_ajax_digifusion_remove_cart_item', array( $this, 'ajax_remove_cart_item' ) );
 		add_action( 'wp_ajax_nopriv_digifusion_remove_cart_item', array( $this, 'ajax_remove_cart_item' ) );
-		add_action( 'wp_ajax_digifusion_get_mini_cart', array( $this, 'ajax_get_mini_cart' ) );
-		add_action( 'wp_ajax_nopriv_digifusion_get_mini_cart', array( $this, 'ajax_get_mini_cart' ) );
-
-		// Update cart fragments for AJAX cart updates
-		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_fragments' ) );
 	}
 
 	/**
@@ -336,18 +344,6 @@ class DigiFusion_WooCommerce {
 				$priority += 10;
 			}
 		}
-
-		// Remove the default WooCommerce panel if it exists and is empty
-		$default_panel = $wp_customize->get_panel( 'woocommerce' );
-		if ( $default_panel ) {
-			// Get all sections in the panel
-			$sections_in_panel = array();
-			foreach ( $wp_customize->sections() as $section ) {
-				if ( $section->panel === 'woocommerce' ) {
-					$sections_in_panel[] = $section->id;
-				}
-			}
-		}
 	}
 
 	/**
@@ -357,6 +353,84 @@ class DigiFusion_WooCommerce {
 	 */
 	public function is_cart_icon_enabled() {
 		return get_theme_mod( 'digifusion_woocommerce_cart_icon', false );
+	}
+
+	/**
+	 * Generate cart icon colors CSS for dynamic CSS system
+	 *
+	 * @param DigiFusion_Dynamic_CSS $css_generator Dynamic CSS generator instance
+	 */
+	public function generate_cart_colors_css( $css_generator ) {
+		// Only generate if cart icon is enabled
+		if ( ! get_theme_mod( 'digifusion_woocommerce_cart_icon', false ) ) {
+			return;
+		}
+
+		// Get cart colors setting
+		$cart_colors = get_theme_mod( 'digifusion_woocommerce_cart_colors' );
+		$colors = json_decode( $cart_colors, true );
+		
+		// Default colors
+		$defaults = array(
+			'icon'         => '#2c3e50',
+			'counter'      => '#e74c3c',
+			'counter_text' => '#ffffff',
+			'price'        => '#716c80',
+		);
+		
+		if ( ! is_array( $colors ) ) {
+			return;
+		}
+		
+		// Generate CSS rules only if colors differ from defaults
+		if ( ! empty( $colors['icon'] ) && $colors['icon'] !== $defaults['icon'] ) {
+			$css_generator->add_css_rule( 
+				'.digifusion-cart-icon-link .digifusion-cart-icon-icon svg', 
+				'fill', 
+				$colors['icon'] 
+			);
+		}
+		
+		if ( ! empty( $colors['counter'] ) && $colors['counter'] !== $defaults['counter'] ) {
+			$css_generator->add_css_rule( 
+				'.digifusion-cart-count', 
+				'background-color', 
+				$colors['counter'] 
+			);
+		}
+		
+		if ( ! empty( $colors['counter_text'] ) && $colors['counter_text'] !== $defaults['counter_text'] ) {
+			$css_generator->add_css_rule( 
+				'.digifusion-cart-count', 
+				'color', 
+				$colors['counter_text'] 
+			);
+		}
+		
+		if ( ! empty( $colors['price'] ) && $colors['price'] !== $defaults['price'] ) {
+			$css_generator->add_css_rule( 
+				'.digifusion-cart-total', 
+				'color', 
+				$colors['price'] 
+			);
+		}
+	}
+
+	/**
+	 * Regenerate CSS when cart colors are saved
+	 */
+	public function maybe_regenerate_css_on_cart_colors() {
+		// Check if cart colors were modified
+		$cart_colors_modified = isset( $_POST['customized'] ) && 
+							strpos( $_POST['customized'], 'digifusion_woocommerce_cart_colors' ) !== false;
+		
+		if ( $cart_colors_modified ) {
+			// Get dynamic CSS instance and regenerate
+			if ( class_exists( 'DigiFusion_Dynamic_CSS' ) ) {
+				$dynamic_css = DigiFusion_Dynamic_CSS::get_instance();
+				$dynamic_css->generate_css_file();
+			}
+		}
 	}
 
 	/**
@@ -388,74 +462,166 @@ class DigiFusion_WooCommerce {
 		// Pass cart data to JavaScript
 		wp_localize_script(
 			'digifusion-woocommerce',
-			'digifusionWoo',
+			'digifusionCartData',
 			array(
-				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-				'cartUrl'        => wc_get_cart_url(),
-				'checkoutUrl'    => wc_get_checkout_url(),
-				'shopUrl'        => wc_get_page_permalink( 'shop' ),
-				'nonce'          => wp_create_nonce( 'digifusion_woo_nonce' ),
-				'showMiniCart'   => ! ( is_cart() || is_checkout() ),
-				'isCartPage'     => is_cart(),
-				'isCheckoutPage' => is_checkout(),
-				'strings'        => array(
-					'added'              => __( 'Product added to cart!', 'digifusion' ),
-					'removed'            => __( 'Item removed from cart', 'digifusion' ),
-					'failed'             => __( 'Failed to remove item', 'digifusion' ),
-					'failed_product'     => __( 'Failed to add product to cart', 'digifusion' ),
-					'cart_updated'       => __( 'Cart updated', 'digifusion' ),
-					'security_failed'    => __( 'Security check failed', 'digifusion' ),
-					'invalid_cart_item'  => __( 'Invalid cart item', 'digifusion' ),
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'cart_nonce' => wp_create_nonce( 'digifusion_cart_nonce' ),
+				'cart_url' => wc_get_cart_url(),
+				'checkout_url' => wc_get_checkout_url(),
+				'strings' => array(
+					'total' => __( 'Total:', 'digifusion' ),
+					'view_cart' => __( 'View Cart', 'digifusion' ),
+					'checkout' => __( 'Checkout', 'digifusion' ),
+					'empty_cart' => __( 'Your cart is currently empty.', 'digifusion' ),
+					'quantity' => __( 'Quantity', 'digifusion' ),
+					'remove_item' => __( 'Remove this item', 'digifusion' ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * Add cart icon to header.
+	 * Render cart icon in header
 	 */
-	public function add_cart_icon() {
-		// Check if cart icon is enabled
+	public function render_cart_icon() {
+		// Only show if enabled in customizer
 		if ( ! get_theme_mod( 'digifusion_woocommerce_cart_icon', false ) ) {
 			return;
 		}
 
-		// Don't show mini cart on cart and checkout pages
-		$show_mini_cart = ! ( is_cart() || is_checkout() );
-
-		$cart_count = WC()->cart->get_cart_contents_count();
-		$cart_total = WC()->cart->get_cart_total();
+		// Get customizer settings
 		$show_counter = get_theme_mod( 'digifusion_woocommerce_cart_counter', true );
 		$show_price = get_theme_mod( 'digifusion_woocommerce_cart_price', true );
+		$show_mini_cart = get_theme_mod( 'digifusion_woocommerce_mini_cart', true );
+		$colors = json_decode( get_theme_mod( 'digifusion_woocommerce_cart_colors', json_encode( array(
+			'icon'         => '#2c3e50',
+			'counter'      => '#e74c3c',
+			'counter_text' => '#ffffff',
+			'price'        => '#716c80',
+		) ) ), true );
+
+		// Get cart data
+		$cart_count = WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
+		$cart_total = WC()->cart ? WC()->cart->get_cart_total() : wc_price( 0 );
+		$cart_url = wc_get_cart_url();
+
+		// Generate unique ID for this cart icon
+		$cart_id = 'digifusion-cart-icon-' . uniqid();
 		?>
-		<li class="digi-menu-item digi-cart-icon-wrapper" data-show-mini-cart="<?php echo esc_attr( $show_mini_cart ? 'true' : 'false' ); ?>">
-			<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="digi-cart-icon-link" aria-label="<?php esc_attr_e( 'View your shopping cart', 'digifusion' ); ?>">
-				<span class="digi-cart-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="27" height="24" fill="currentColor"><path d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z"/></svg>
-					
-					<?php if ( $show_counter && $cart_count > 0 ) : ?>
-						<span class="digi-cart-count"><?php echo esc_html( $cart_count ); ?></span>
-					<?php endif; ?>
-				</span>
+		<li class="digifusion-cart-icon-wrapper" id="<?php echo esc_attr( $cart_id ); ?>">
+			<a href="<?php echo esc_url( $cart_url ); ?>" 
+				class="digifusion-cart-icon-link"
+				data-show-mini-cart="<?php echo esc_attr( $show_mini_cart ? 'true' : 'false' ); ?>"
+				aria-label="<?php echo esc_attr( sprintf( __( 'View cart (%d items)', 'digifusion' ), $cart_count ) ); ?>">
 				
-				<?php if ( $show_price && $cart_count > 0 ) : ?>
-					<span class="digi-cart-total"><?php echo wp_kses_post( $cart_total ); ?></span>
+				<div class="digifusion-cart-icon-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="27" height="24"><path d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16l37.9 0c7.6 0 14.2 5.3 15.7 12.8l58.9 288c6.1 29.8 32.3 51.2 62.7 51.2L496 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-304.8 0c-15.2 0-28.3-10.7-31.4-25.6L152 288l314.6 0c29.4 0 55-20 62.1-48.5L570.6 71.8c5-20.2-10.2-39.8-31-39.8L99.1 32C92.5 13 74.4 0 53.9 0L16 0zm90.1 64l433.4 0L497.6 231.8C494 246 481.2 256 466.5 256l-321.1 0L106.1 64zM168 456a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zm80 0a56 56 0 1 0 -112 0 56 56 0 1 0 112 0zm200-24a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm0 80a56 56 0 1 0 0-112 56 56 0 1 0 0 112z"/></svg>
+					
+					<?php if ( $show_counter ) : ?>
+						<span class="digifusion-cart-count"><?php echo esc_html( $cart_count ); ?></span>
+					<?php endif; ?>
+				</div>
+				
+				<?php if ( $show_price ) : ?>
+					<span class="digifusion-cart-total"><?php echo wp_kses_post( $cart_total ); ?></span>
 				<?php endif; ?>
 			</a>
 
 			<?php if ( $show_mini_cart ) : ?>
-				<div class="digi-mini-cart" aria-hidden="true">
-					<div class="digi-mini-cart-content">
-						<div class="digi-mini-cart-header">
-							<h3><?php esc_html_e( 'Shopping Cart', 'digifusion' ); ?></h3>
-							<button class="digi-mini-cart-close" aria-label="<?php esc_attr_e( 'Close cart', 'digifusion' ); ?>">
-								<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-								</svg>
-							</button>
+				<div class="digifusion-mini-cart">
+					<div class="digifusion-mini-cart-wrapper">
+						<div class="digifusion-mini-cart-header">
+							<h3 class="digifusion-mini-cart-title">
+								<?php esc_html_e( 'Shopping Cart', 'digifusion' ); ?>
+							</h3>
 						</div>
-						<div class="digi-mini-cart-items">
-							<?php $this->get_mini_cart_content(); ?>
+						
+						<div class="digifusion-mini-cart-content">
+							<?php if ( $cart_count > 0 ) : ?>
+								<div class="digifusion-mini-cart-items">
+									<?php
+									foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+										$product = $cart_item['data'];
+										$product_id = $cart_item['product_id'];
+										$quantity = $cart_item['quantity'];
+										
+										if ( ! $product || ! $product->exists() ) {
+											continue;
+										}
+										
+										$product_name = $product->get_name();
+										$product_price = WC()->cart->get_product_price( $product );
+										$product_image = $product->get_image( array( 50, 50 ) );
+										$product_permalink = $product->is_visible() ? $product->get_permalink( $cart_item ) : '';
+										?>
+										<div class="digifusion-mini-cart-item" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>">
+											<?php if ( $product_image ) : ?>
+												<div class="digifusion-mini-cart-item-image">
+													<?php if ( $product_permalink ) : ?>
+														<a href="<?php echo esc_url( $product_permalink ); ?>">
+															<?php echo wp_kses_post( $product_image ); ?>
+														</a>
+													<?php else : ?>
+														<?php echo wp_kses_post( $product_image ); ?>
+													<?php endif; ?>
+												</div>
+											<?php endif; ?>
+											
+											<div class="digifusion-mini-cart-item-details">
+												<h4 class="digifusion-mini-cart-item-name">
+													<?php if ( $product_permalink ) : ?>
+														<a href="<?php echo esc_url( $product_permalink ); ?>">
+															<?php echo esc_html( $product_name ); ?>
+														</a>
+													<?php else : ?>
+														<?php echo esc_html( $product_name ); ?>
+													<?php endif; ?>
+												</h4>
+												<p class="digifusion-mini-cart-item-price">
+													<?php echo wp_kses_post( $product_price ); ?>
+												</p>
+											</div>
+											
+											<input 
+												type="number" 
+												class="digifusion-mini-cart-item-quantity" 
+												value="<?php echo esc_attr( $quantity ); ?>" 
+												min="0"
+												data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>"
+												aria-label="<?php esc_attr_e( 'Quantity', 'digifusion' ); ?>"
+											/>
+											
+											<button 
+												class="digifusion-mini-cart-item-remove" 
+												data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>"
+												aria-label="<?php esc_attr_e( 'Remove this item', 'digifusion' ); ?>"
+											>
+												×
+											</button>
+										</div>
+										<?php
+									}
+									?>
+								</div>
+								
+								<div class="digifusion-mini-cart-total">
+									<span><?php esc_html_e( 'Total:', 'digifusion' ); ?></span>
+									<span class="total-amount"><?php echo wp_kses_post( WC()->cart->get_cart_total() ); ?></span>
+								</div>
+								
+								<div class="digifusion-mini-cart-buttons">
+									<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="digifusion-mini-cart-button secondary">
+										<?php esc_html_e( 'View Cart', 'digifusion' ); ?>
+									</a>
+									<a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="digifusion-mini-cart-button primary">
+										<?php esc_html_e( 'Checkout', 'digifusion' ); ?>
+									</a>
+								</div>
+							<?php else : ?>
+								<div class="digifusion-mini-cart-empty">
+									<p><?php esc_html_e( 'Your cart is currently empty.', 'digifusion' ); ?></p>
+								</div>
+							<?php endif; ?>
 						</div>
 					</div>
 				</div>
@@ -465,249 +631,183 @@ class DigiFusion_WooCommerce {
 	}
 
 	/**
-	 * Get mini cart content.
+	 * AJAX handler to get cart data
 	 */
-	public function get_mini_cart_content() {
-		if ( WC()->cart->is_empty() ) {
-			?>
-			<div class="digi-mini-cart-empty">
-				<p><?php esc_html_e( 'Your cart is currently empty.', 'digifusion' ); ?></p>
-				<a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>" class="digi-mini-cart-shop-link">
-					<?php esc_html_e( 'Continue Shopping', 'digifusion' ); ?>
-				</a>
-			</div>
-			<?php
+	public function ajax_get_cart_data() {
+		// Initialize WooCommerce cart if needed
+		if ( ! WC()->cart ) {
+			if ( function_exists( 'wc_load_cart' ) ) {
+				wc_load_cart();
+			}
+		}
+
+		$cart_count = WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
+		
+		// Get clean cart total without HTML tags and entities
+		$cart_total_html = WC()->cart ? WC()->cart->get_cart_total() : wc_price( 0 );
+		$cart_total_clean = html_entity_decode( strip_tags( $cart_total_html ), ENT_QUOTES, 'UTF-8' );
+
+		wp_send_json_success( array(
+			'count' => $cart_count,
+			'total' => $cart_total_clean,
+			'total_html' => $cart_total_html,
+		) );
+	}
+
+	/**
+	 * AJAX handler to get cart items for mini cart
+	 */
+	public function ajax_get_cart_items() {
+		// Initialize WooCommerce cart if needed
+		if ( ! WC()->cart ) {
+			if ( function_exists( 'wc_load_cart' ) ) {
+				wc_load_cart();
+			}
+		}
+
+		$cart_items = array();
+
+		if ( WC()->cart && ! WC()->cart->is_empty() ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+				$product = $cart_item['data'];
+				$product_id = $cart_item['product_id'];
+				$quantity = $cart_item['quantity'];
+				
+				if ( ! $product || ! $product->exists() ) {
+					continue;
+				}
+				
+				$product_name = $product->get_name();
+				
+				// Get clean price without HTML tags and entities
+				$product_price_html = WC()->cart->get_product_price( $product );
+				$product_price_clean = html_entity_decode( strip_tags( $product_price_html ), ENT_QUOTES, 'UTF-8' );
+				
+				$product_image_id = $product->get_image_id();
+				$product_image_url = $product_image_id ? wp_get_attachment_image_url( $product_image_id, 'thumbnail' ) : '';
+				$product_permalink = $product->is_visible() ? $product->get_permalink( $cart_item ) : '';
+				
+				$cart_items[] = array(
+					'key' => $cart_item_key,
+					'name' => $product_name,
+					'price' => $product_price_clean,
+					'price_html' => $product_price_html,
+					'quantity' => $quantity,
+					'image' => $product_image_url,
+					'permalink' => $product_permalink,
+				);
+			}
+		}
+
+		// Get clean cart total
+		$cart_total_html = WC()->cart ? WC()->cart->get_cart_total() : wc_price( 0 );
+		$cart_total_clean = html_entity_decode( strip_tags( $cart_total_html ), ENT_QUOTES, 'UTF-8' );
+
+		wp_send_json_success( array(
+			'items' => $cart_items,
+			'count' => WC()->cart ? WC()->cart->get_cart_contents_count() : 0,
+			'total' => $cart_total_clean,
+			'total_html' => $cart_total_html,
+		) );
+	}
+
+	/**
+	 * AJAX handler to update cart item quantity
+	 */
+	public function ajax_update_cart_item() {
+		// Use check_ajax_referer with die=false for cart operations
+		$nonce_check = check_ajax_referer( 'digifusion_cart_nonce', 'nonce', false );
+		
+		// For cart operations, we allow non-logged users but still verify the nonce when possible
+		if ( ! $nonce_check && is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'digifusion' ) ) );
 			return;
 		}
 
-		?>
-		<div class="digi-mini-cart-products">
-			<?php
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				$_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-				$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
-
-				if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_widget_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
-					$product_name      = apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key );
-					$thumbnail         = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
-					$product_price     = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $_product ), $cart_item, $cart_item_key );
-					$product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
-					?>
-					<div class="digi-mini-cart-item" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>">
-						<div class="digi-mini-cart-item-image">
-							<?php if ( empty( $product_permalink ) ) : ?>
-								<?php echo $thumbnail; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							<?php else : ?>
-								<a href="<?php echo esc_url( $product_permalink ); ?>">
-									<?php echo $thumbnail; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-								</a>
-							<?php endif; ?>
-						</div>
-						<div class="digi-mini-cart-item-details">
-							<div class="digi-mini-cart-item-name">
-								<?php if ( empty( $product_permalink ) ) : ?>
-									<?php echo wp_kses_post( $product_name ); ?>
-								<?php else : ?>
-									<a href="<?php echo esc_url( $product_permalink ); ?>">
-										<?php echo wp_kses_post( $product_name ); ?>
-									</a>
-								<?php endif; ?>
-							</div>
-							<div class="digi-mini-cart-item-quantity">
-								<?php echo esc_html( $cart_item['quantity'] ); ?> × <?php echo wp_kses_post( $product_price ); ?>
-							</div>
-						</div>
-						<button class="digi-mini-cart-item-remove" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>" aria-label="<?php esc_attr_e( 'Remove this item', 'digifusion' ); ?>">
-							<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							</svg>
-						</button>
-					</div>
-					<?php
-				}
-			}
-			?>
-		</div>
-
-		<div class="digi-mini-cart-footer">
-			<div class="digi-mini-cart-total">
-				<strong><?php esc_html_e( 'Subtotal:', 'digifusion' ); ?> <?php echo WC()->cart->get_cart_subtotal(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
-			</div>
-			<div class="digi-mini-cart-buttons">
-				<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="digi-mini-cart-view-cart">
-					<?php esc_html_e( 'View Cart', 'digifusion' ); ?>
-				</a>
-				<a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="digi-mini-cart-checkout">
-					<?php esc_html_e( 'Checkout', 'digifusion' ); ?>
-				</a>
-			</div>
-		</div>
-		<?php
-	}
-
-	/**
-	 * AJAX handler to get cart data.
-	 */
-	public function ajax_get_cart_data() {
-		// Check if request is from valid AJAX call
-		if ( ! wp_doing_ajax() ) {
-			wp_die( __( 'Invalid request', 'digifusion' ) );
-		}
-
-		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'digifusion_woo_nonce' ) ) {
-			wp_send_json_error( __( 'Security check failed', 'digifusion' ) );
-		}
-
-		// Ensure WooCommerce cart is loaded
+		// Initialize WooCommerce cart if needed
 		if ( ! WC()->cart ) {
-			wp_send_json_error( __( 'Cart not available', 'digifusion' ) );
+			if ( function_exists( 'wc_load_cart' ) ) {
+				wc_load_cart();
+			}
 		}
 
-		$cart_count = WC()->cart->get_cart_contents_count();
-		$cart_total = WC()->cart->get_cart_total();
+		$cart_item_key = sanitize_text_field( $_POST['cart_item_key'] );
+		$quantity = intval( $_POST['quantity'] );
 
-		wp_send_json_success(
-			array(
-				'count' => $cart_count,
-				'total' => $cart_total,
-			)
-		);
+		if ( empty( $cart_item_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid cart item', 'digifusion' ) ) );
+			return;
+		}
+
+		if ( ! WC()->cart ) {
+			wp_send_json_error( array( 'message' => __( 'Cart not available', 'digifusion' ) ) );
+			return;
+		}
+
+		// Update cart item quantity
+		if ( $quantity <= 0 ) {
+			WC()->cart->remove_cart_item( $cart_item_key );
+		} else {
+			WC()->cart->set_quantity( $cart_item_key, $quantity );
+		}
+
+		// Get clean cart total
+		$cart_total_html = WC()->cart->get_cart_total();
+		$cart_total_clean = html_entity_decode( strip_tags( $cart_total_html ), ENT_QUOTES, 'UTF-8' );
+
+		wp_send_json_success( array(
+			'message' => __( 'Cart updated', 'digifusion' ),
+			'count' => WC()->cart->get_cart_contents_count(),
+			'total' => $cart_total_clean,
+			'total_html' => $cart_total_html,
+		) );
 	}
 
 	/**
-	 * AJAX handler to remove cart item.
+	 * AJAX handler to remove cart item
 	 */
 	public function ajax_remove_cart_item() {
-		// Check if request is from valid AJAX call
-		if ( ! wp_doing_ajax() ) {
-			wp_die( __( 'Invalid request', 'digifusion' ) );
+		// Use check_ajax_referer with die=false for cart operations
+		$nonce_check = check_ajax_referer( 'digifusion_cart_nonce', 'nonce', false );
+		
+		// For cart operations, we allow non-logged users but still verify the nonce when possible
+		if ( ! $nonce_check && is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'digifusion' ) ) );
+			return;
 		}
 
-		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'digifusion_woo_nonce' ) ) {
-			wp_send_json_error( __( 'Security check failed', 'digifusion' ) );
-		}
-
-		// Validate cart item key
-		if ( ! isset( $_POST['cart_item_key'] ) ) {
-			wp_send_json_error( __( 'Cart item key is required', 'digifusion' ) );
-		}
-
-		$cart_item_key = sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) );
-
-		// Validate cart item key format
-		if ( empty( $cart_item_key ) || ! is_string( $cart_item_key ) ) {
-			wp_send_json_error( __( 'Invalid cart item key', 'digifusion' ) );
-		}
-
-		// Ensure WooCommerce cart is loaded
+		// Initialize WooCommerce cart if needed
 		if ( ! WC()->cart ) {
-			wp_send_json_error( __( 'Cart not available', 'digifusion' ) );
+			if ( function_exists( 'wc_load_cart' ) ) {
+				wc_load_cart();
+			}
 		}
 
-		// Check if cart item exists
-		$cart_contents = WC()->cart->get_cart();
-		if ( ! isset( $cart_contents[ $cart_item_key ] ) ) {
-			wp_send_json_error( __( 'Cart item not found', 'digifusion' ) );
+		$cart_item_key = sanitize_text_field( $_POST['cart_item_key'] );
+
+		if ( empty( $cart_item_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid cart item', 'digifusion' ) ) );
+			return;
 		}
 
-		// Remove item from cart
-		$removed = WC()->cart->remove_cart_item( $cart_item_key );
-
-		if ( $removed ) {
-			// Calculate totals after removal
-			WC()->cart->calculate_totals();
-
-			// Trigger WooCommerce actions
-			do_action( 'woocommerce_cart_item_removed', $cart_item_key, WC()->cart );
-
-			wp_send_json_success(
-				array(
-					'message'    => __( 'Item removed from cart', 'digifusion' ),
-					'cart_count' => WC()->cart->get_cart_contents_count(),
-					'cart_total' => WC()->cart->get_cart_total(),
-					'removed'    => true,
-				)
-			);
-		} else {
-			wp_send_json_error( __( 'Failed to remove item from cart', 'digifusion' ) );
-		}
-	}
-
-	/**
-	 * AJAX handler to get mini cart content.
-	 */
-	public function ajax_get_mini_cart() {
-		// Check if request is from valid AJAX call
-		if ( ! wp_doing_ajax() ) {
-			wp_die( __( 'Invalid request', 'digifusion' ) );
-		}
-
-		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'digifusion_woo_nonce' ) ) {
-			wp_send_json_error( __( 'Security check failed', 'digifusion' ) );
-		}
-
-		// Ensure WooCommerce cart is loaded
 		if ( ! WC()->cart ) {
-			wp_send_json_error( __( 'Cart not available', 'digifusion' ) );
+			wp_send_json_error( array( 'message' => __( 'Cart not available', 'digifusion' ) ) );
+			return;
 		}
 
-		ob_start();
-		$this->get_mini_cart_content();
-		$mini_cart_html = ob_get_clean();
+		// Remove cart item
+		WC()->cart->remove_cart_item( $cart_item_key );
 
-		wp_send_json_success(
-			array(
-				'mini_cart_html' => $mini_cart_html,
-				'cart_count'     => WC()->cart->get_cart_contents_count(),
-				'cart_total'     => WC()->cart->get_cart_total(),
-			)
-		);
-	}
+		// Get clean cart total
+		$cart_total_html = WC()->cart->get_cart_total();
+		$cart_total_clean = html_entity_decode( strip_tags( $cart_total_html ), ENT_QUOTES, 'UTF-8' );
 
-	/**
-	 * Add cart fragments for AJAX updates.
-	 *
-	 * @param array $fragments WooCommerce cart fragments.
-	 * @return array
-	 */
-	public function cart_fragments( $fragments ) {
-		// Only add fragments if cart icon is enabled
-		if ( ! get_theme_mod( 'digifusion_woocommerce_cart_icon', false ) ) {
-			return $fragments;
-		}
-
-		$cart_count = WC()->cart->get_cart_contents_count();
-		$cart_total = WC()->cart->get_cart_total();
-		$show_counter = get_theme_mod( 'digifusion_woocommerce_cart_counter', true );
-		$show_price = get_theme_mod( 'digifusion_woocommerce_cart_price', true );
-
-		// Cart count fragment
-		if ( $show_counter ) {
-			ob_start();
-			if ( $cart_count > 0 ) {
-				echo '<span class="digi-cart-count">' . esc_html( $cart_count ) . '</span>';
-			}
-			$fragments['.digi-cart-count'] = ob_get_clean();
-		}
-
-		// Cart total fragment
-		if ( $show_price ) {
-			ob_start();
-			if ( $cart_count > 0 ) {
-				echo '<span class="digi-cart-total">' . wp_kses_post( $cart_total ) . '</span>';
-			}
-			$fragments['.digi-cart-total'] = ob_get_clean();
-		}
-
-		// Mini cart content fragment
-		ob_start();
-		$this->get_mini_cart_content();
-		$fragments['.digi-mini-cart-items'] = ob_get_clean();
-
-		return $fragments;
+		wp_send_json_success( array(
+			'message' => __( 'Item removed from cart', 'digifusion' ),
+			'count' => WC()->cart->get_cart_contents_count(),
+			'total' => $cart_total_clean,
+			'total_html' => $cart_total_html,
+		) );
 	}
 
 	/**

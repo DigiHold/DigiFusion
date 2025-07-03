@@ -3,7 +3,7 @@
     border-bottom-width: 1px;
     border-bottom-color: var(--digi-silver);
     border-bottom-style: solid;
-    z-index: 99;
+    z-index: 999;
 
     &.transparent {
         background-color: transparent;

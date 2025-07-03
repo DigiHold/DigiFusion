@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                // Récupérer l'ID cible
+                // Get ID
                 const targetId = this.getAttribute('href').substring(1);
                 const targetElement = document.getElementById(targetId);
 
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     	adminBarHeight = adminBar ? adminBar.offsetHeight : 0;
 					}
 
-                    // Calculer la position de défilement en tenant compte du header et de l'admin bar
+                    // Get target position
                     const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY;
 
                     window.scrollTo({
@@ -176,16 +176,4 @@ document.addEventListener('DOMContentLoaded', function() {
             } );
         } );
     }
-
-    // --------
-    // Lightbox
-    // --------
-    // const images = document.querySelectorAll( '.share__btn' );
-    // if ( images ) {
-	// 	new PhotoSwipeLightbox({
-	// 		gallery: '.addon-gallery',
-	// 		children: 'a',
-	// 		pswpModule: PhotoSwipe 
-	// 	}).init();
-	// }
 });

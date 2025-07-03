@@ -49,6 +49,10 @@
     width: 50%;
     color: #fff;
 
+    p {
+        margin: 0;
+    }
+
     a {
         color: #fff;
 

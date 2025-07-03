@@ -71,7 +71,7 @@ class DigiFusion_Fonts {
 	 * Initialize hooks.
 	 */
 	private function init_hooks() {
-		// Enqueue fonts on frontend - EARLY priority
+		// Enqueue fonts on frontend
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_fonts' ), 1 );
 		
 		// Process fonts when customizer settings change
@@ -79,6 +79,36 @@ class DigiFusion_Fonts {
 		
 		// Clean up on theme switch
 		add_action( 'switch_theme', array( $this, 'cleanup_fonts' ) );
+	}
+
+	/**
+	 * Initialize WordPress Filesystem API.
+	 *
+	 * @return bool True if filesystem is available, false otherwise.
+	 */
+	private function init_filesystem() {
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			
+			// Initialize the filesystem
+			$filesystem_method = get_filesystem_method();
+			if ( 'direct' === $filesystem_method ) {
+				WP_Filesystem();
+			} else {
+				// For non-direct methods, we need credentials
+				$credentials = request_filesystem_credentials( '', $filesystem_method, false, false, array() );
+				if ( false === $credentials ) {
+					return false;
+				}
+				if ( ! WP_Filesystem( $credentials ) ) {
+					return false;
+				}
+			}
+		}
+
+		return ! empty( $wp_filesystem );
 	}
 
 	/**
@@ -91,39 +121,119 @@ class DigiFusion_Fonts {
 		
 		// Typography settings to check
 		$typography_settings = array(
-			'digifusion_body_typography',
-			'digifusion_h1_typography',
-			'digifusion_h2_typography',
-			'digifusion_h3_typography',
-			'digifusion_h4_typography',
-			'digifusion_h5_typography',
-			'digifusion_h6_typography',
-			'digifusion_menu_typography',
-			'digifusion_footer_typography',
+			'digifusion_body_typo',
+			'digifusion_headings1_typo',
+			'digifusion_headings2_typo',
+			'digifusion_headings3_typo',
+			'digifusion_headings4_typo',
+			'digifusion_headings5_typo',
+			'digifusion_headings6_typo',
+			'digifusion_menu_typo',
+			'digifusion_footer_typo',
 		);
 		
 		foreach ( $typography_settings as $setting ) {
-			$typography = get_theme_mod( $setting );
-			$typography_data = $this->parse_typography_setting( $typography );
+			$typography_json = get_theme_mod( $setting, '' );
 			
-			if ( ! empty( $typography_data['fontFamily'] ) && ! $this->is_system_font( $typography_data['fontFamily'] ) ) {
-				$font_family = $typography_data['fontFamily'];
-				$font_weight = ! empty( $typography_data['fontWeight'] ) ? $typography_data['fontWeight'] : '400';
-				
-				// Normalize font weight
-				$font_weight = $this->normalize_font_weight( $font_weight );
-				
-				if ( ! isset( $fonts[ $font_family ] ) ) {
-					$fonts[ $font_family ] = array();
-				}
-				
-				if ( ! in_array( $font_weight, $fonts[ $font_family ], true ) ) {
-					$fonts[ $font_family ][] = $font_weight;
-				}
+			if ( empty( $typography_json ) ) {
+				continue;
+			}
+			
+			$typography_data = $this->parse_typography_setting( $typography_json );
+			
+			if ( empty( $typography_data ) || ! is_array( $typography_data ) ) {
+				continue;
+			}
+			
+			// Check if font family is set and not empty
+			if ( empty( $typography_data['fontFamily'] ) || $this->is_system_font( $typography_data['fontFamily'] ) ) {
+				continue;
+			}
+			
+			$font_family = trim( $typography_data['fontFamily'] );
+			
+			// Get font weight - check multiple possible keys
+			$font_weight = '400'; // Default weight
+			if ( ! empty( $typography_data['fontWeight'] ) ) {
+				$font_weight = $typography_data['fontWeight'];
+			} elseif ( ! empty( $typography_data['font-weight'] ) ) {
+				$font_weight = $typography_data['font-weight'];
+			}
+			
+			// Normalize font weight
+			$font_weight = $this->normalize_font_weight( $font_weight );
+			
+			// Initialize font family if not exists
+			if ( ! isset( $fonts[ $font_family ] ) ) {
+				$fonts[ $font_family ] = array();
+			}
+			
+			// Add weight if not already present
+			if ( ! in_array( $font_weight, $fonts[ $font_family ], true ) ) {
+				$fonts[ $font_family ][] = $font_weight;
 			}
 		}
 		
 		return $fonts;
+	}
+
+	/**
+	 * Enqueue fonts for frontend.
+	 */
+	public function enqueue_fonts() {
+		$fonts = $this->get_typography_fonts();
+		
+		if ( empty( $fonts ) ) {
+			return;
+		}
+		
+		$use_local_fonts = get_theme_mod( 'digifusion_typography_local_fonts', false );
+		
+		if ( $use_local_fonts ) {
+			// Local fonts
+			$upload_dir = wp_upload_dir();
+			$css_file = $upload_dir['basedir'] . '/digifusion/digifusion-fonts.css';
+			$css_url = $upload_dir['baseurl'] . '/digifusion/digifusion-fonts.css';
+			
+			if ( file_exists( $css_file ) ) {
+				wp_enqueue_style(
+					'digifusion-local-fonts',
+					$css_url,
+					array(),
+					filemtime( $css_file )
+				);
+				
+				// Add preload links for critical fonts
+				add_action( 'wp_head', array( $this, 'add_font_preload_links' ), 1 );
+			}
+		} else {
+			// Google CDN - Use API v1 format
+			$font_families = array();
+			
+			foreach ( $fonts as $font_family => $weights ) {
+				$encoded_family = str_replace( ' ', '+', $font_family );
+				
+				if ( ! empty( $weights ) ) {
+					// Remove duplicates and sort weights
+					$weights = array_unique( $weights, SORT_NUMERIC );
+					sort( $weights, SORT_NUMERIC );
+					$font_families[] = $encoded_family . ':' . implode( ',', $weights );
+				} else {
+					$font_families[] = $encoded_family;
+				}
+			}
+			
+			if ( ! empty( $font_families ) ) {
+				$google_fonts_url = 'https://fonts.googleapis.com/css?family=' . implode( '|', $font_families ) . '&display=swap';
+				
+				wp_enqueue_style(
+					'digifusion-google-fonts',
+					$google_fonts_url,
+					array(),
+					DIGIFUSION_VERSION
+				);
+			}
+		}
 	}
 
 	/**
@@ -169,29 +279,47 @@ class DigiFusion_Fonts {
 	 * @return string Normalized font weight.
 	 */
 	private function normalize_font_weight( $weight ) {
-		if ( $weight === 'normal' ) {
+		// Handle empty or null values
+		if ( empty( $weight ) ) {
 			return '400';
-		} elseif ( $weight === 'bold' ) {
-			return '700';
 		}
 		
-		if ( ! is_numeric( $weight ) ) {
-			$weight_map = array(
-				'thin'       => '100',
-				'extra-light' => '200',
-				'light'      => '300',
-				'regular'    => '400',
-				'medium'     => '500',
-				'semi-bold'  => '600',
-				'bold'       => '700',
-				'extra-bold' => '800',
-				'black'      => '900',
-			);
-			
-			return isset( $weight_map[ strtolower( $weight ) ] ) ? $weight_map[ strtolower( $weight ) ] : '400';
+		// Convert to string for processing
+		$weight = (string) $weight;
+		
+		// Handle named weights
+		$weight_map = array(
+			'normal'      => '400',
+			'bold'        => '700',
+			'thin'        => '100',
+			'extra-light' => '200',
+			'extralight'  => '200',
+			'light'       => '300',
+			'regular'     => '400',
+			'medium'      => '500',
+			'semi-bold'   => '600',
+			'semibold'    => '600',
+			'extra-bold'  => '800',
+			'extrabold'   => '800',
+			'black'       => '900',
+		);
+		
+		$weight_lower = strtolower( trim( $weight ) );
+		if ( isset( $weight_map[ $weight_lower ] ) ) {
+			return $weight_map[ $weight_lower ];
 		}
 		
-		return (string) $weight;
+		// Handle numeric weights
+		if ( is_numeric( $weight ) ) {
+			$numeric_weight = (int) $weight;
+			// Ensure weight is within valid range (100-900)
+			if ( $numeric_weight >= 100 && $numeric_weight <= 900 ) {
+				return (string) $numeric_weight;
+			}
+		}
+		
+		// Default fallback
+		return '400';
 	}
 
 	/**
@@ -463,13 +591,20 @@ class DigiFusion_Fonts {
 	}
 
 	/**
-	 * Download a font file.
+	 * Download a font file using WordPress Filesystem API.
 	 *
 	 * @param string $url Font file URL.
 	 * @param string $file_path Destination file path.
 	 * @return bool True on success, false on failure.
 	 */
 	private function download_font_file( $url, $file_path ) {
+		// Initialize filesystem
+		if ( ! $this->init_filesystem() ) {
+			return false;
+		}
+		
+		global $wp_filesystem;
+		
 		$response = wp_remote_get(
 			$url,
 			array(
@@ -492,39 +627,24 @@ class DigiFusion_Fonts {
 			return false;
 		}
 		
-		// Use WordPress filesystem or fallback to direct file write like DigiBlocks
-		global $wp_filesystem;
-		
-		if ( ! $wp_filesystem ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			WP_Filesystem();
-		}
-		
-		$result = false;
-		if ( $wp_filesystem ) {
-			$result = $wp_filesystem->put_contents( $file_path, $font_data, FS_CHMOD_FILE );
-		} else {
-			// Fallback to direct file write
-			$result = file_put_contents( $file_path, $font_data );
-			if ( $result !== false ) {
-				$result = true;
-			}
-		}
-		
-		if ( ! $result ) {
-			return false;
-		}
-		
-		return true;
+		// Use WordPress filesystem API only
+		return $wp_filesystem->put_contents( $file_path, $font_data, FS_CHMOD_FILE );
 	}
 
 	/**
-	 * Save fonts CSS file.
+	 * Save fonts CSS file using WordPress Filesystem API.
 	 *
 	 * @param string $css CSS content.
 	 * @return bool True on success, false on failure.
 	 */
 	private function save_fonts_css( $css ) {
+		// Initialize filesystem
+		if ( ! $this->init_filesystem() ) {
+			return false;
+		}
+		
+		global $wp_filesystem;
+		
 		$upload_dir = wp_upload_dir();
 		$digifusion_dir = $upload_dir['basedir'] . '/digifusion/';
 		
@@ -537,88 +657,8 @@ class DigiFusion_Fonts {
 		$header = "/* DigiFusion Fonts - Generated on " . current_time( 'Y-m-d H:i:s' ) . " */\n";
 		$css_content = $header . $css;
 		
-		global $wp_filesystem;
-		
-		if ( ! $wp_filesystem ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			WP_Filesystem();
-		}
-		
-		$result = false;
-		if ( $wp_filesystem ) {
-			$result = $wp_filesystem->put_contents( $css_file, $css_content, FS_CHMOD_FILE );
-		} else {
-			// Fallback to direct file write
-			$result = file_put_contents( $css_file, $css_content );
-			if ( $result !== false ) {
-				$result = true;
-			}
-		}
-		
-		if ( ! $result ) {
-			return false;
-		}
-		
-		return true;
-	}
-
-	/**
-	 * Enqueue fonts for frontend.
-	 */
-	public function enqueue_fonts() {
-		$fonts = $this->get_typography_fonts();
-		
-		if ( empty( $fonts ) ) {
-			return;
-		}
-		
-		$use_local_fonts = get_theme_mod( 'digifusion_typography_local_fonts', false );
-		
-		if ( $use_local_fonts ) {
-			// Local fonts
-			$upload_dir = wp_upload_dir();
-			$css_file = $upload_dir['basedir'] . '/digifusion/digifusion-fonts.css';
-			$css_url = $upload_dir['baseurl'] . '/digifusion/digifusion-fonts.css';
-			
-			if ( file_exists( $css_file ) ) {
-				wp_enqueue_style(
-					'digifusion-local-fonts',
-					$css_url,
-					array(),
-					filemtime( $css_file )
-				);
-				
-				// Add preload links for critical fonts
-				add_action( 'wp_head', array( $this, 'add_font_preload_links' ), 1 );
-			}
-		} else {
-			// Google CDN - Use API v1 format like DigiBlocks
-			$font_families = array();
-			
-			foreach ( $fonts as $font_family => $weights ) {
-				$encoded_family = str_replace( ' ', '+', $font_family );
-				
-				if ( ! empty( $weights ) ) {
-					sort( $weights );
-					$font_families[] = $encoded_family . ':' . implode( ',', $weights );
-				} else {
-					$font_families[] = $encoded_family;
-				}
-			}
-			
-			if ( ! empty( $font_families ) ) {
-				$google_fonts_url = 'https://fonts.googleapis.com/css?family=';
-				$google_fonts_url .= implode( '|', $font_families );
-				$google_fonts_url .= '&display=swap';
-				
-				wp_enqueue_style(
-					'digifusion-google-fonts',
-					$google_fonts_url,
-					array(),
-					DIGIFUSION_VERSION
-				);
-			}
-		}
+		// Use WordPress filesystem API only
+		return $wp_filesystem->put_contents( $css_file, $css_content, FS_CHMOD_FILE );
 	}
 
 	/**

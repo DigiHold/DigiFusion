@@ -543,17 +543,60 @@
         });
     });
 
+	// WooCommerce Cart Icon Colors
+	wp.customize('digifusion_woocommerce_cart_colors', function(value) {
+		value.bind(function(newval) {
+			const colors = parseColorGroup(newval);
+			
+			let css = '';
+			
+			if (colors.icon) {
+				css += `
+					.digifusion-cart-icon-link .digifusion-cart-icon-icon svg {
+						fill: ${colors.icon};
+					}
+				`;
+			}
+			
+			if (colors.counter) {
+				css += `
+					.digifusion-cart-count {
+						background-color: ${colors.counter};
+					}
+				`;
+			}
+			
+			if (colors.counter_text) {
+				css += `
+					.digifusion-cart-count {
+						color: ${colors.counter_text};
+					}
+				`;
+			}
+			
+			if (colors.price) {
+				css += `
+					.digifusion-cart-total {
+						color: ${colors.price};
+					}
+				`;
+			}
+			
+			updateCSS('digifusion-woocommerce-cart-colors-style', css);
+		});
+	});
+
     // Typography Controls
     const typographyMappings = {
-        'digifusion_body_typography': 'body',
-        'digifusion_h1_typography': 'h1, .digi-page-title',
-        'digifusion_h2_typography': 'h2',
-        'digifusion_h3_typography': 'h3',
-        'digifusion_h4_typography': 'h4',
-        'digifusion_h5_typography': 'h5',
-        'digifusion_h6_typography': 'h6',
-        'digifusion_menu_typography': '.digi-header-nav a, .digi-nav-menu a',
-        'digifusion_footer_typography': '.site-footer'
+        'digifusion_body_typo': 'body',
+        'digifusion_headings1_typo': 'h1, .digi-page-title',
+        'digifusion_headings2_typo': 'h2',
+        'digifusion_headings3_typo': 'h3',
+        'digifusion_headings4_typo': 'h4',
+        'digifusion_headings5_typo': 'h5',
+        'digifusion_headings6_typo': 'h6',
+        'digifusion_menu_typo': '.digi-header-nav a, .digi-nav-menu a',
+        'digifusion_footer_typo': '.site-footer'
     };
 
     // Create typography controls for each mapping

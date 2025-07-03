@@ -17,10 +17,12 @@ $post_id = get_the_ID();
 // Get page-specific header settings
 $page_header_type = $post_id ? get_post_meta($post_id, 'digifusion_header_type', true) : '';
 $custom_logo_id = $post_id ? get_post_meta($post_id, 'digifusion_custom_logo', true) : 0;
+$custom_logo_id = apply_filters( 'digifusion_logo_id', $custom_logo_id );
 $menu_colors = $post_id ? get_post_meta($post_id, 'digifusion_menu_colors', true) : array();
 
 // Determine header type (page-specific overrides theme default)
 $header_type = $page_header_type ? $page_header_type : get_theme_mod('digifusion_header_type', 'minimal');
+$header_type = apply_filters( 'digifusion_header_classes', $header_type );
 $header_classes = array('site-header');
 if ('transparent' === $header_type) {
     $header_classes[] = 'transparent';
@@ -55,9 +57,10 @@ if ('transparent' === $header_type) {
 			?>
 			<?php if ( ! function_exists( 'digifusion_header' ) || ! digifusion_header() ) :
 				// Check if header is disabled for this page
-				$disable_header = $post_id ? get_post_meta($post_id, 'digifusion_disable_header', true) : false;
-    
-				if (!$disable_header) :
+				$disable_header = $post_id ? get_post_meta( $post_id, 'digifusion_disable_header', true ) : false;
+				$disable_header = apply_filters( 'digifusion_show_header', $disable_header );
+
+				if ( ! $disable_header ) :
 					?>
 					<header class="<?php echo esc_attr( implode( ' ', $header_classes ) ); ?>" <?php echo wp_kses_post( digifusion_get_schema_markup( 'header' ) ); ?>>
 						<?php
@@ -169,6 +172,12 @@ if ('transparent' === $header_type) {
 							do_action( 'digifusion_after_header_inner' );
 							?>
 						</div>
+						<?php
+						/**
+						 * DigiFusion after header container.
+						 */
+						do_action( 'digifusion_after_header_container' );
+						?>
 					</header>
 					<?php
 				endif;
@@ -187,7 +196,10 @@ if ('transparent' === $header_type) {
 				 */
 				do_action( 'digifusion_before_main' );
 
-				if ( !is_front_page() && get_theme_mod( 'enable_page_header', true ) ) {
+				$show_page_header = ! is_front_page() && get_theme_mod( 'enable_page_header', true );
+				$show_page_header = apply_filters( 'digifusion_show_page_header', $show_page_header );
+
+				if ( $show_page_header ) {
 					get_template_part( 'template-parts/page-header' );
 				}
 				?>
@@ -197,5 +209,14 @@ if ('transparent' === $header_type) {
 					 * DigiFusion before main container.
 					 */
 					do_action( 'digifusion_before_main_container' );
+
+					// Check if padding is disabled for this page
+					$disable_padding   = $post_id ? get_post_meta( $post_id, 'digifusion_disable_padding', true ) : false;
+					$disable_padding   = apply_filters( 'digifusion_show_padding', $disable_padding );
+					$container_classes = array('container');
+
+					if ( ! $disable_padding ) :
+						$container_classes[] = 'sp';
+					endif;
 					?>
-					<div class="container">
+					<div class="<?php echo esc_attr( implode( ' ', $container_classes ) ); ?>">

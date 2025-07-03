@@ -78,12 +78,6 @@ All images and resources used in this theme are either created by the theme auth
 * Icons: Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 * Font: Default system fonts
 
-Screenshot Resources:
-* Hero background image: Licensed from Envato Elements - https://elements.envato.com/ (Licensed for use in theme screenshots and promotional materials)
-* Feature icons: Licensed from Flaticon - https://www.flaticon.com/ (Licensed for commercial use with attribution)
-
-Note: The images and icons used in the theme screenshot are for demonstration purposes only and are not included with the theme download. Users must obtain their own licensed images and icons for their websites.
-
 == Theme Support ==
 
 For theme support and documentation, please visit: https://digihold.me/support/

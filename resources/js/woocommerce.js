@@ -1,560 +1,626 @@
 /**
- * WooCommerce JavaScript for DigiFusion Theme
- *
+ * DigiFusion Cart Icon JavaScript - Enhanced Mobile Support
+ * 
  * @package DigiFusion
- * @since 1.0.0
  */
 
-class DigiFusionWooCommerce {
-	constructor() {
-		this.cartIconLink = document.querySelector('.digi-cart-icon-link');
-		this.cartIcon = document.querySelector('.digi-cart-icon');
-		this.cartIconWrapper = document.querySelector('.digi-cart-icon-wrapper');
-		this.cartCount = document.querySelector('.digi-cart-count');
-		this.cartTotal = document.querySelector('.digi-cart-total');
-		this.miniCart = document.querySelector('.digi-mini-cart');
-		this.miniCartItems = document.querySelector('.digi-mini-cart-items');
-		this.miniCartClose = document.querySelector('.digi-mini-cart-close');
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all cart icon wrappers
+    const cartBlocks = document.querySelectorAll('.digifusion-cart-icon-wrapper');
+    
+    if (!cartBlocks.length) return;
+    
+    // Check if we have the localized data
+    if (typeof digifusionCartData === 'undefined') {
+        console.error('DigiFusion Cart Icon: Missing AJAX data');
+        return;
+    }
+    
+    // Mobile breakpoint (1024px and below)
+    const MOBILE_BREAKPOINT = 1024;
+    
+    // Utility function to check if we're on mobile
+    function isMobile() {
+        return window.innerWidth <= MOBILE_BREAKPOINT;
+    }
+
+	// Slide down function (same as navigation)
+	function slideDown(element, duration) {
+		element.style.display = 'flex';
+		element.style.height = '0px';
+		element.style.overflow = 'hidden';
+		element.style.transition = `height ${duration}ms ease-in-out`;
 		
-		this.isMobile = window.innerWidth <= 768;
-		this.isOpen = false;
-		this.isRemoving = false; // Prevent multiple simultaneous removals
+		// Get the natural height
+		const naturalHeight = element.scrollHeight;
 		
-		this.init();
-	}
-
-	/**
-	 * Initialize WooCommerce functionality
-	 */
-	init() {
-		// Update cart on page load
-		this.updateCartDisplay();
-
-		// Listen for cart updates
-		this.bindEvents();
-
-		// Initialize mini cart
-		if (this.miniCart && digifusionWoo.showMiniCart) {
-			this.initMiniCart();
-		}
-
-		// Handle window resize
-		window.addEventListener('resize', () => {
-			this.isMobile = window.innerWidth <= 768;
-		});
-
-		// Listen for WooCommerce fragments update
-		this.bindWooCommerceEvents();
-	}
-
-	/**
-	 * Bind WooCommerce specific events
-	 */
-	bindWooCommerceEvents() {
-		// Listen for WooCommerce cart fragments
-		document.body.addEventListener('wc_fragments_loaded', () => {
-			this.handleCartFragmentsUpdate();
-		});
-
-		document.body.addEventListener('wc_fragments_refreshed', () => {
-			this.handleCartFragmentsUpdate();
-		});
-
-		// Listen for add to cart events
-		document.body.addEventListener('added_to_cart', (event) => {
-			this.handleAddToCart(event);
-		});
-
-		// Listen for WooCommerce cart updates
-		document.body.addEventListener('updated_wc_div', () => {
-			this.handleCartUpdate();
-		});
-
-		// Listen for cart item quantity changes
-		document.addEventListener('change', (event) => {
-			if (event.target.matches('.qty, input[name*="cart["][name*="][qty]"]')) {
-				this.handleCartUpdate();
-			}
-		});
-	}
-
-	/**
-	 * Handle cart fragments update
-	 */
-	handleCartFragmentsUpdate() {
-		// Update cart display elements
-		this.updateCartElements();
-		// Update mini cart content
-		this.updateMiniCart();
-	}
-
-	/**
-	 * Handle add to cart event
-	 */
-	handleAddToCart(event) {
-		this.updateCartDisplay();
-		this.updateMiniCart();
-		this.showCartNotification(digifusionWoo.strings.added);
-		
-		// Auto-open mini cart on mobile when item is added
-		if (this.isMobile && this.miniCart && !this.isOpen) {
-			setTimeout(() => {
-				this.openMiniCart();
-			}, 500);
-		}
-	}
-
-	/**
-	 * Handle general cart update
-	 */
-	handleCartUpdate() {
-		this.updateCartDisplay();
-		this.updateMiniCart();
-	}
-
-	/**
-	 * Bind event listeners
-	 */
-	bindEvents() {
-		// Handle cart form submissions
-		const cartForms = document.querySelectorAll('form.woocommerce-cart-form');
-		cartForms.forEach(form => {
-			form.addEventListener('submit', () => {
-				setTimeout(() => {
-					this.updateCartDisplay();
-					this.updateMiniCart();
-				}, 1000);
-			});
-		});
-
-		// Handle remove from cart links on cart page
-		document.addEventListener('click', (event) => {
-			if (event.target.matches('.remove_from_cart_button, .product-remove a')) {
-				setTimeout(() => {
-					this.updateCartDisplay();
-					this.updateMiniCart();
-				}, 1000);
-			}
-		});
-	}
-
-	/**
-	 * Initialize mini cart functionality
-	 */
-	initMiniCart() {
-		if (!this.cartIconWrapper || !this.miniCart) return;
-
-		// Cart icon click handler
-		if (this.cartIconLink) {
-			this.cartIconLink.addEventListener('click', (event) => {
-				if (this.isMobile || this.cartIconWrapper.dataset.showMiniCart === 'true') {
-					event.preventDefault();
-					this.toggleMiniCart();
-				}
-			});
-		}
-
-		// Close button
-		if (this.miniCartClose) {
-			this.miniCartClose.addEventListener('click', () => {
-				this.closeMiniCart();
-			});
-		}
-
-		// Click outside to close
-		document.addEventListener('click', (event) => {
-			if (this.isOpen && 
-				!this.cartIconWrapper.contains(event.target) && 
-				!this.miniCart.contains(event.target)) {
-				this.closeMiniCart();
-			}
-		});
-
-		// ESC key to close
-		document.addEventListener('keydown', (event) => {
-			if (event.key === 'Escape' && this.isOpen) {
-				this.closeMiniCart();
-			}
-		});
-
-		// Handle remove item clicks
-		this.bindMiniCartItemEvents();
-
-		// Desktop hover (if not mobile)
-		if (!this.isMobile) {
-			this.cartIconWrapper.addEventListener('mouseenter', () => {
-				this.openMiniCart();
-			});
-
-			this.cartIconWrapper.addEventListener('mouseleave', () => {
-				this.closeMiniCart();
-			});
-		}
-	}
-
-	/**
-	 * Bind mini cart item events
-	 */
-	bindMiniCartItemEvents() {
-		if (!this.miniCartItems) return;
-
-		// Use event delegation for dynamically added items
-		this.miniCartItems.addEventListener('click', (event) => {
-			const removeButton = event.target.closest('.digi-mini-cart-item-remove');
-			if (removeButton && !this.isRemoving) {
-				event.preventDefault();
-				const cartItemKey = removeButton.dataset.cartItemKey;
-				if (cartItemKey) {
-					this.removeCartItem(cartItemKey, removeButton);
-				}
-			}
-		});
-	}
-
-	/**
-	 * Toggle mini cart
-	 */
-	toggleMiniCart() {
-		if (this.isOpen) {
-			this.closeMiniCart();
-		} else {
-			this.openMiniCart();
-		}
-	}
-
-	/**
-	 * Open mini cart
-	 */
-	openMiniCart() {
-		if (!this.miniCart) return;
-
-		this.isOpen = true;
-		this.miniCart.classList.add('digi-mini-cart--open');
-		this.miniCart.setAttribute('aria-hidden', 'false');
-		
-		// Update content when opening
-		this.updateMiniCart();
-
-		// Focus management for accessibility
-		if (this.isMobile && this.miniCartClose) {
-			this.miniCartClose.focus();
-		}
-
-		// Prevent body scroll on mobile
-		if (this.isMobile) {
-			document.body.style.overflow = 'hidden';
-		}
-	}
-
-	/**
-	 * Close mini cart
-	 */
-	closeMiniCart() {
-		if (!this.miniCart) return;
-
-		// Remove focus from any focused elements inside mini cart before hiding
-		const focusedElement = this.miniCart.querySelector(':focus');
-		if (focusedElement) {
-			focusedElement.blur();
-		}
-
-		this.isOpen = false;
-		this.miniCart.classList.remove('digi-mini-cart--open');
-		this.miniCart.setAttribute('aria-hidden', 'true');
-
-		// Restore body scroll
-		if (this.isMobile) {
-			document.body.style.overflow = '';
-		}
-	}
-
-	/**
-	 * Update mini cart content
-	 */
-	async updateMiniCart() {
-		if (!this.miniCartItems || !digifusionWoo.showMiniCart) return;
-
-		try {
-			const formData = new FormData();
-			formData.append('action', 'digifusion_get_mini_cart');
-			formData.append('nonce', digifusionWoo.nonce);
-
-			const response = await fetch(digifusionWoo.ajaxUrl, {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-
-			if (data.success) {
-				this.miniCartItems.innerHTML = data.data.mini_cart_html;
-				// Re-bind events after content update
-				this.bindMiniCartItemEvents();
-			} else {
-				console.error('Mini cart update failed:', data.data || 'Unknown error');
-			}
-		} catch (error) {
-			console.error('Update mini cart error:', error);
-		}
-	}
-
-	/**
-	 * Remove item from cart
-	 */
-	async removeCartItem(cartItemKey, buttonElement) {
-		if (!cartItemKey || this.isRemoving) return;
-
-		// Prevent multiple simultaneous removals
-		this.isRemoving = true;
-
-		// Add loading state
-		if (buttonElement) {
-			buttonElement.disabled = true;
-			buttonElement.style.opacity = '0.5';
-		}
-
-		try {
-			const formData = new FormData();
-			formData.append('action', 'digifusion_remove_cart_item');
-			formData.append('cart_item_key', cartItemKey);
-			formData.append('nonce', digifusionWoo.nonce);
-
-			const response = await fetch(digifusionWoo.ajaxUrl, {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-
-			if (data.success) {
-				// Remove the item element with animation
-				const itemElement = buttonElement ? buttonElement.closest('.digi-mini-cart-item') : null;
-				if (itemElement) {
-					itemElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-					itemElement.style.opacity = '0';
-					itemElement.style.transform = 'translateX(100%)';
-					setTimeout(() => {
-						if (itemElement.parentNode) {
-							itemElement.remove();
-						}
-					}, 300);
-				}
-
-				// Update cart display
-				this.updateCartDisplay();
-				this.updateMiniCart();
-				this.showCartNotification(digifusionWoo.strings.removed);
-				
-				// Trigger WooCommerce event
-				document.body.dispatchEvent(new CustomEvent('removed_from_cart', {
-					detail: { cartItemKey: cartItemKey }
-				}));
-
-				// Update cart fragments
-				if (typeof wc_cart_fragments_params !== 'undefined') {
-					document.body.dispatchEvent(new CustomEvent('wc_fragment_refresh'));
-				}
-
-			} else {
-				// Handle specific error messages
-				const errorMessage = data.data || digifusionWoo.strings.failed;
-				console.error('Remove cart item failed:', errorMessage);
-				this.showCartNotification(errorMessage, 'error');
-			}
-		} catch (error) {
-			console.error('Remove cart item error:', error);
-			this.showCartNotification(digifusionWoo.strings.failed, 'error');
-		} finally {
-			// Reset loading state
-			this.isRemoving = false;
-			if (buttonElement) {
-				buttonElement.disabled = false;
-				buttonElement.style.opacity = '1';
-			}
-		}
-	}
-
-	/**
-	 * Update cart display (count and total)
-	 */
-	async updateCartDisplay() {
-		if (!this.cartIconLink) return;
-
-		try {
-			const formData = new FormData();
-			formData.append('action', 'digifusion_get_cart_data');
-			formData.append('nonce', digifusionWoo.nonce);
-
-			const response = await fetch(digifusionWoo.ajaxUrl, {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-
-			if (data.success) {
-				this.updateCartCount(data.data.count);
-				this.updateCartTotal(data.data.total);
-			} else {
-				console.error('Cart display update failed:', data.data || 'Unknown error');
-			}
-		} catch (error) {
-			console.error('Update cart display error:', error);
-		}
-	}
-
-	/**
-	 * Update cart elements from existing DOM
-	 */
-	updateCartElements() {
-		// Re-query elements in case they were replaced by fragments
-		this.cartCount = document.querySelector('.digi-cart-count');
-		this.cartTotal = document.querySelector('.digi-cart-total');
-		this.miniCartItems = document.querySelector('.digi-mini-cart-items');
-
-		// Re-bind events if mini cart items were updated
-		if (this.miniCartItems) {
-			this.bindMiniCartItemEvents();
-		}
-	}
-
-	/**
-	 * Update cart count badge
-	 */
-	updateCartCount(count) {
-		if (!this.cartCount) {
-			// Try to find the element again
-			this.cartCount = document.querySelector('.digi-cart-count');
-			if (!this.cartCount) return;
-		}
-
-		this.cartCount.textContent = count;
-		
-		if (count > 0) {
-			this.cartCount.style.display = 'flex';
-			// Add bounce animation
-			this.cartCount.style.animation = 'none';
-			requestAnimationFrame(() => {
-				this.cartCount.style.animation = 'cartBounce 0.3s ease';
-			});
-		} else {
-			this.cartCount.style.display = 'none';
-		}
-	}
-
-	/**
-	 * Update cart total price
-	 */
-	updateCartTotal(total) {
-		if (!this.cartTotal) {
-			// Try to find the element again
-			this.cartTotal = document.querySelector('.digi-cart-total');
-			if (!this.cartTotal) return;
-		}
-
-		this.cartTotal.innerHTML = total;
-		
-		if (total && total !== '' && total !== '0') {
-			this.cartTotal.style.display = 'block';
-		} else {
-			this.cartTotal.style.display = 'none';
-		}
-	}
-
-	/**
-	 * Show cart notification
-	 */
-	showCartNotification(message, type = 'success') {
-		// Remove any existing notifications
-		const existingNotifications = document.querySelectorAll('.digi-cart-notification');
-		existingNotifications.forEach(notification => {
-			if (notification.parentNode) {
-				notification.parentNode.removeChild(notification);
-			}
-		});
-
-		// Create notification element
-		const notification = document.createElement('div');
-		notification.className = `digi-cart-notification digi-cart-notification--${type}`;
-		notification.textContent = message;
-		notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
-		notification.setAttribute('aria-live', 'polite');
-
-		// Add to DOM
-		document.body.appendChild(notification);
-
-		// Animate in
+		// Trigger animation
 		requestAnimationFrame(() => {
-			notification.style.opacity = '1';
-			notification.style.transform = 'translateX(0)';
+			element.style.height = naturalHeight + 'px';
 		});
-
-		// Remove after 4 seconds
+		
+		// Clean up after animation
 		setTimeout(() => {
-			notification.style.opacity = '0';
-			notification.style.transform = 'translateX(100%)';
-			setTimeout(() => {
-				if (notification.parentNode) {
-					notification.parentNode.removeChild(notification);
-				}
-			}, 300);
-		}, 4000);
+			element.style.height = '';
+			element.style.overflow = '';
+			element.style.transition = '';
+		}, duration);
 	}
 
-	/**
-	 * Refresh cart data and mini cart
-	 */
-	async refreshCart() {
-		await this.updateCartDisplay();
-		await this.updateMiniCart();
+	// Slide up function (same as navigation)
+	function slideUp(element, duration, callback) {
+		const currentHeight = element.scrollHeight;
+		element.style.height = currentHeight + 'px';
+		element.style.overflow = 'hidden';
+		element.style.transition = `height ${duration}ms ease-in-out`;
+		
+		// Trigger animation
+		requestAnimationFrame(() => {
+			element.style.height = '0px';
+		});
+		
+		// Clean up after animation
+		setTimeout(() => {
+			element.style.height = '';
+			element.style.overflow = '';
+			element.style.transition = '';
+			element.style.display = 'none';
+			if (callback) callback();
+		}, duration);
 	}
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-	// Only initialize if WooCommerce elements are present
-	if (document.querySelector('.digi-cart-icon-link') || document.querySelector('.woocommerce')) {
-		window.digiFusionWoo = new DigiFusionWooCommerce();
-	}
+    
+    cartBlocks.forEach(function(cartBlock) {
+        initCartIcon(cartBlock);
+    });
+    
+    function initCartIcon(cartBlock) {
+        // Cart elements
+        const cartIcon = cartBlock.querySelector('.digifusion-cart-icon-icon');
+        const cartCount = cartBlock.querySelector('.digifusion-cart-count');
+        const cartTotal = cartBlock.querySelector('.digifusion-cart-total');
+        const miniCart = cartBlock.querySelector('.digifusion-mini-cart');
+        const miniCartContent = miniCart ? miniCart.querySelector('.digifusion-mini-cart-content') : null;
+        const cartLink = cartBlock.querySelector('.digifusion-cart-icon-link');
+        
+        let isUpdating = false;
+        let isOpen = false;
+        
+        // Configuration
+        const hasMiniCart = cartLink ? cartLink.dataset.showMiniCart === 'true' : false;
+        
+        // Update cart elements
+        function updateCartElements(count, total, totalHtml) {
+            // Update count
+            if (cartCount) {
+                cartCount.textContent = count;
+            }
+            
+            // Update total
+            if (cartTotal) {
+                cartTotal.innerHTML = totalHtml || total;
+            }
+            
+            // Update block classes
+            cartBlock.classList.toggle('cart-empty', count === 0);
+            cartBlock.classList.toggle('cart-has-items', count > 0);
+        }
+        
+        // Fetch cart items for mini cart
+        function fetchCartItems() {
+            return new Promise(function(resolve) {
+                const formData = new FormData();
+                formData.append('action', 'digifusion_get_cart_items');
+                
+                fetch(digifusionCartData.ajax_url, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success && data.data.items) {
+                        updateMiniCart(data.data.items, data.data.total_html || data.data.total);
+                    }
+                    resolve();
+                })
+                .catch(function(error) {
+                    console.error('DigiFusion Cart Icon: Error fetching cart items', error);
+                    resolve();
+                });
+            });
+        }
+        
+        // Update mini cart content
+        function updateMiniCart(items, total) {
+            if (!miniCartContent) return;
+            
+            let itemsHTML = '';
+            
+            if (items && items.length > 0) {
+                items.forEach(function(item) {
+                    itemsHTML += 
+                        '<div class="digifusion-mini-cart-item" data-cart-item-key="' + item.key + '">' +
+                        '<div class="digifusion-mini-cart-item-image">' +
+                        (item.image ? '<img src="' + item.image + '" alt="' + item.name + '">' : '') +
+                        '</div>' +
+                        '<div class="digifusion-mini-cart-item-details">' +
+                        '<div class="digifusion-mini-cart-item-name">' + 
+                        (item.permalink ? '<a href="' + item.permalink + '">' + item.name + '</a>' : item.name) +
+                        '</div>' +
+                        '<div class="digifusion-mini-cart-item-price">' + item.price_html + '</div>' +
+                        '</div>' +
+                        '<input type="number" class="digifusion-mini-cart-item-quantity" value="' + item.quantity + '" min="0" data-cart-item-key="' + item.key + '" aria-label="' + digifusionCartData.strings.quantity + '">' +
+                        '<button class="digifusion-mini-cart-item-remove" data-cart-item-key="' + item.key + '" title="' + digifusionCartData.strings.remove_item + '" aria-label="' + digifusionCartData.strings.remove_item + '">&times;</button>' +
+                        '</div>';
+                });
+            } else {
+                itemsHTML = '<div class="digifusion-mini-cart-empty">' + digifusionCartData.strings.empty_cart + '</div>';
+            }
+            
+            const cartUrl = digifusionCartData.cart_url || '';
+            const checkoutUrl = digifusionCartData.checkout_url || '';
+            
+            miniCartContent.innerHTML = 
+                '<div class="digifusion-mini-cart-items">' + itemsHTML + '</div>' +
+                (items && items.length > 0 ? 
+                    '<div class="digifusion-mini-cart-total"><span>' + digifusionCartData.strings.total + '</span><span class="total-amount">' + total + '</span></div>' +
+                    '<div class="digifusion-mini-cart-buttons">' +
+                    '<a href="' + cartUrl + '" class="digifusion-mini-cart-button secondary">' + digifusionCartData.strings.view_cart + '</a>' +
+                    '<a href="' + checkoutUrl + '" class="digifusion-mini-cart-button primary">' + digifusionCartData.strings.checkout + '</a>' +
+                    '</div>'
+                : '');
+        }
+        
+        // Animate cart icon
+        function animateCartIcon() {
+            if (!cartIcon) return;
+            
+            cartIcon.classList.add('cart-item-added');
+            
+            setTimeout(function() {
+                cartIcon.classList.remove('cart-item-added');
+            }, 600);
+        }
+        
+        // Fetch cart data
+        function fetchCartData(justAdded) {
+            if (isUpdating) return;
+            isUpdating = true;
+            
+            const formData = new FormData();
+            formData.append('action', 'digifusion_get_cart_data');
+            
+            fetch(digifusionCartData.ajax_url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    updateCartElements(data.data.count, data.data.total, data.data.total_html);
+                    
+                    if (hasMiniCart) {
+                        fetchCartItems().then(function() {
+                            if (justAdded) {
+                                animateCartIcon();
+                            }
+                        });
+                    } else if (justAdded) {
+                        animateCartIcon();
+                    }
+                }
+                isUpdating = false;
+            })
+            .catch(function(error) {
+                console.error('DigiFusion Cart Icon: Error fetching cart data', error);
+                isUpdating = false;
+            });
+        }
+        
+        // Update cart item quantity
+        function updateCartItemQuantity(itemKey, quantity) {
+            const formData = new FormData();
+            formData.append('action', 'digifusion_update_cart_item');
+            formData.append('nonce', digifusionCartData.cart_nonce);
+            formData.append('cart_item_key', itemKey);
+            formData.append('quantity', quantity);
+            
+            fetch(digifusionCartData.ajax_url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    setTimeout(function() {
+                        fetchCartData();
+                    }, 200);
+                }
+            })
+            .catch(function(error) {
+                console.error('DigiFusion Cart Icon: Error updating cart item', error);
+            });
+        }
+        
+        // Remove cart item
+        function removeCartItem(itemKey) {
+            const formData = new FormData();
+            formData.append('action', 'digifusion_remove_cart_item');
+            formData.append('nonce', digifusionCartData.cart_nonce);
+            formData.append('cart_item_key', itemKey);
+            
+            fetch(digifusionCartData.ajax_url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    setTimeout(function() {
+                        fetchCartData();
+                    }, 200);
+                }
+            })
+            .catch(function(error) {
+                console.error('DigiFusion Cart Icon: Error removing cart item', error);
+            });
+        }
+        
+        // Show mini cart (with slide down animation for mobile)
+        function showMiniCart() {
+			if (!miniCart || !hasMiniCart) return;
+			
+			isOpen = true;
+			cartBlock.classList.add('mini-cart-open');
+			
+			if (isMobile()) {
+				cartBlock.classList.add('submenu-open');
+				slideDown(miniCart, 300);
+			} else {
+				miniCart.classList.add('visible');
+			}
+		}
+        
+        // Hide mini cart
+        function hideMiniCart() {
+			if (!miniCart || !hasMiniCart) return;
+			
+			isOpen = false;
+			cartBlock.classList.remove('mini-cart-open');
+			
+			if (isMobile()) {
+				slideUp(miniCart, 300, () => {
+					cartBlock.classList.remove('submenu-open');
+				});
+			} else {
+				miniCart.classList.remove('visible');
+			}
+		}
+        
+        // Toggle mini cart (for mobile click)
+        function toggleMiniCart() {
+            if (isOpen) {
+                hideMiniCart();
+            } else {
+                showMiniCart();
+            }
+        }
+        
+        // Setup event listeners based on device type
+        function setupEventListeners() {
+            if (!cartLink) return;
+            
+            // Remove existing event listeners to avoid duplicates
+            cartLink.removeEventListener('mouseenter', showMiniCart);
+            cartLink.removeEventListener('mouseleave', handleMouseLeave);
+            cartLink.removeEventListener('click', handleClick);
+            
+            if (hasMiniCart) {
+                if (isMobile()) {
+                    // Mobile: Click to toggle mini cart
+                    cartLink.addEventListener('click', handleClick);
+                } else {
+                    // Desktop: Hover to show/hide mini cart
+                    cartLink.addEventListener('mouseenter', showMiniCart);
+                    cartLink.addEventListener('mouseleave', handleMouseLeave);
+                    
+                    // Also handle click for desktop
+                    cartLink.addEventListener('click', handleClick);
+                }
+            }
+        }
+        
+        // Handle mouse leave (desktop only)
+        function handleMouseLeave() {
+            if (isMobile()) return;
+            
+            setTimeout(function() {
+                if (!miniCart.matches(':hover') && !cartLink.matches(':hover')) {
+                    hideMiniCart();
+                }
+            }, 100);
+        }
+        
+        // Handle click events
+        function handleClick(e) {
+            e.preventDefault();
+            
+            if (!hasMiniCart) {
+                // If mini cart is disabled, allow normal navigation
+                window.location.href = cartLink.href;
+                return;
+            }
+            
+            if (isMobile()) {
+                // Mobile: Toggle mini cart
+                toggleMiniCart();
+            } else {
+                // Desktop: Toggle mini cart
+                toggleMiniCart();
+            }
+        }
+        
+        // Event listeners for mini cart interactions
+        if (miniCart) {
+            // Handle quantity changes
+            miniCart.addEventListener('change', function(e) {
+                if (e.target.matches('.digifusion-mini-cart-item-quantity')) {
+                    const itemKey = e.target.dataset.cartItemKey;
+                    const quantity = parseInt(e.target.value) || 0;
+                    if (itemKey) {
+                        updateCartItemQuantity(itemKey, quantity);
+                    }
+                }
+            });
+            
+            // Handle remove item clicks
+            miniCart.addEventListener('click', function(e) {
+                if (e.target.matches('.digifusion-mini-cart-item-remove')) {
+                    e.preventDefault();
+                    const itemKey = e.target.dataset.cartItemKey;
+                    if (itemKey) {
+                        removeCartItem(itemKey);
+                    }
+                }
+                e.stopPropagation();
+            });
+            
+            // Handle mouse leave for desktop
+            if (!isMobile()) {
+                miniCart.addEventListener('mouseleave', function() {
+                    setTimeout(function() {
+                        if (!miniCart.matches(':hover') && !cartLink.matches(':hover')) {
+                            hideMiniCart();
+                        }
+                    }, 100);
+                });
+            }
+        }
+        
+        // Setup initial event listeners
+        setupEventListeners();
+        
+        // Re-setup event listeners on window resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                setupEventListeners();
+                
+                // Close mini cart if switching from mobile to desktop
+                if (!isMobile() && isOpen) {
+                    hideMiniCart();
+                }
+            }, 150);
+        });
+        
+        // Hide mini cart when clicking outside (mobile)
+        document.addEventListener('click', function(e) {
+            if (isMobile() && !cartBlock.contains(e.target) && isOpen) {
+                hideMiniCart();
+            }
+        });
+        
+        // Hide mini cart on escape key (mobile)
+        document.addEventListener('keydown', function(e) {
+            if (isMobile() && e.key === 'Escape' && isOpen) {
+                hideMiniCart();
+            }
+        });
+        
+        // Initial fetch
+        setTimeout(function() {
+            fetchCartData();
+        }, 100);
+    }
+    
+    // Listen for ALL WooCommerce events
+    document.body.addEventListener('added_to_cart', function(e) {
+        setTimeout(function() {
+            cartBlocks.forEach(function(cartBlock) {
+                const cartIcon = cartBlock.querySelector('.digifusion-cart-icon-icon');
+                if (cartIcon) {
+                    cartIcon.classList.add('cart-item-added');
+                    setTimeout(function() {
+                        cartIcon.classList.remove('cart-item-added');
+                    }, 600);
+                }
+            });
+            refreshAllCarts(true);
+        }, 200);
+    });
+    
+    // WooCommerce fragments refresh
+    document.body.addEventListener('wc_fragment_refresh', function(e) {
+        setTimeout(function() {
+            refreshAllCarts();
+        }, 100);
+    });
+    
+    // Listen for form submissions on add to cart forms
+    document.addEventListener('submit', function(e) {
+        if (e.target.matches('.cart form, form.cart')) {
+            setTimeout(function() {
+                refreshAllCarts(true);
+            }, 1000);
+        }
+    });
+    
+    // Listen for AJAX form submissions and button clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.add_to_cart_button, .single_add_to_cart_button, .ajax_add_to_cart') || 
+            e.target.closest('.add_to_cart_button, .single_add_to_cart_button, .ajax_add_to_cart')) {
+            setTimeout(function() {
+                refreshAllCarts(true);
+            }, 1000);
+        }
+    });
+    
+    // Helper function to refresh all cart icons
+    function refreshAllCarts(justAdded) {
+        cartBlocks.forEach(function(cartBlock) {
+            const cartIcon = cartBlock.querySelector('.digifusion-cart-icon-icon');
+            const cartCount = cartBlock.querySelector('.digifusion-cart-count');
+            const cartTotal = cartBlock.querySelector('.digifusion-cart-total');
+            const miniCart = cartBlock.querySelector('.digifusion-mini-cart');
+            const miniCartContent = miniCart ? miniCart.querySelector('.digifusion-mini-cart-content') : null;
+            const cartLink = cartBlock.querySelector('.digifusion-cart-icon-link');
+            
+            const hasMiniCartForBlock = cartLink ? cartLink.dataset.showMiniCart === 'true' : false;
+            
+            const formData = new FormData();
+            formData.append('action', 'digifusion_get_cart_data');
+            
+            fetch(digifusionCartData.ajax_url, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    if (cartCount) {
+                        cartCount.textContent = data.data.count;
+                    }
+                    
+                    if (cartTotal) {
+                        cartTotal.innerHTML = data.data.total_html || data.data.total;
+                    }
+                    
+                    cartBlock.classList.toggle('cart-empty', data.data.count === 0);
+                    cartBlock.classList.toggle('cart-has-items', data.data.count > 0);
+                    
+                    if (hasMiniCartForBlock && miniCartContent) {
+                        const itemsFormData = new FormData();
+                        itemsFormData.append('action', 'digifusion_get_cart_items');
+                        
+                        fetch(digifusionCartData.ajax_url, {
+                            method: 'POST',
+                            body: itemsFormData,
+                            credentials: 'same-origin'
+                        })
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(itemsData) {
+                            if (itemsData.success && itemsData.data.items) {
+                                let itemsHTML = '';
+                                
+                                if (itemsData.data.items && itemsData.data.items.length > 0) {
+                                    itemsData.data.items.forEach(function(item) {
+                                        itemsHTML += 
+                                            '<div class="digifusion-mini-cart-item" data-cart-item-key="' + item.key + '">' +
+                                            '<div class="digifusion-mini-cart-item-image">' +
+                                            (item.image ? '<img src="' + item.image + '" alt="' + item.name + '">' : '') +
+                                            '</div>' +
+                                            '<div class="digifusion-mini-cart-item-details">' +
+                                            '<div class="digifusion-mini-cart-item-name">' + 
+                                            (item.permalink ? '<a href="' + item.permalink + '">' + item.name + '</a>' : item.name) +
+                                            '</div>' +
+                                            '<div class="digifusion-mini-cart-item-price">' + item.price_html + '</div>' +
+                                            '</div>' +
+                                            '<input type="number" class="digifusion-mini-cart-item-quantity" value="' + item.quantity + '" min="0" data-cart-item-key="' + item.key + '" aria-label="' + digifusionCartData.strings.quantity + '">' +
+                                            '<button class="digifusion-mini-cart-item-remove" data-cart-item-key="' + item.key + '" title="' + digifusionCartData.strings.remove_item + '" aria-label="' + digifusionCartData.strings.remove_item + '">&times;</button>' +
+                                            '</div>';
+                                    });
+                                } else {
+                                    itemsHTML = '<div class="digifusion-mini-cart-empty">' + digifusionCartData.strings.empty_cart + '</div>';
+                                }
+                                
+                                const cartUrl = digifusionCartData.cart_url || '';
+                                const checkoutUrl = digifusionCartData.checkout_url || '';
+                                
+                                miniCartContent.innerHTML = 
+                                    '<div class="digifusion-mini-cart-items">' + itemsHTML + '</div>' +
+                                    (itemsData.data.items && itemsData.data.items.length > 0 ? 
+                                        '<div class="digifusion-mini-cart-total"><span>' + digifusionCartData.strings.total + '</span><span class="total-amount">' + (itemsData.data.total_html || itemsData.data.total) + '</span></div>' +
+                                        '<div class="digifusion-mini-cart-buttons">' +
+                                        '<a href="' + cartUrl + '" class="digifusion-mini-cart-button secondary">' + digifusionCartData.strings.view_cart + '</a>' +
+                                        '<a href="' + checkoutUrl + '" class="digifusion-mini-cart-button primary">' + digifusionCartData.strings.checkout + '</a>' +
+                                        '</div>'
+                                    : '');
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    }
+    
+    // Periodic refresh (as backup)
+    setInterval(function() {
+        refreshAllCarts();
+    }, 30000);
 });
 
-// Re-initialize if cart elements are added dynamically
-if (typeof MutationObserver !== 'undefined') {
-	const observer = new MutationObserver((mutations) => {
-		mutations.forEach((mutation) => {
-			if (mutation.type === 'childList') {
-				const addedNodes = Array.from(mutation.addedNodes);
-				const hasCartElements = addedNodes.some(node => 
-					node.nodeType === Node.ELEMENT_NODE && 
-					(node.querySelector && node.querySelector('.digi-cart-icon-link'))
-				);
-				
-				if (hasCartElements && !window.digiFusionWoo) {
-					window.digiFusionWoo = new DigiFusionWooCommerce();
-				}
-			}
-		});
-	});
-
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true
-	});
-}
-
-// Export for use in other scripts if needed
-if (typeof module !== 'undefined' && module.exports) {
-	module.exports = DigiFusionWooCommerce;
+// jQuery support for WooCommerce events (if jQuery is available)
+if (typeof jQuery !== 'undefined') {
+    jQuery(document).ready(function($) {
+        $(document.body).on('updated_wc_div', function() {
+            setTimeout(function() {
+                const cartBlocks = document.querySelectorAll('.digifusion-cart-icon-wrapper');
+                cartBlocks.forEach(function(cartBlock) {
+                    // Simplified refresh for each cart block
+                    const formData = new FormData();
+                    formData.append('action', 'digifusion_get_cart_data');
+                    
+                    fetch(digifusionCartData.ajax_url, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const cartCount = cartBlock.querySelector('.digifusion-cart-count');
+                            const cartTotal = cartBlock.querySelector('.digifusion-cart-total');
+                            
+                            if (cartCount) cartCount.textContent = data.data.count;
+                            if (cartTotal) cartTotal.innerHTML = data.data.total_html || data.data.total;
+                        }
+                    });
+                });
+            }, 100);
+        });
+        
+        $(document.body).on('updated_cart_totals', function() {
+            setTimeout(function() {
+                const event = new CustomEvent('wc_cart_updated');
+                document.body.dispatchEvent(event);
+            }, 100);
+        });
+    });
 }

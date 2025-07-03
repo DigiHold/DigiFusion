@@ -1,9 +1,1 @@
-body .digifusion-page-settings-sidebar .components-panel__body.is-opened > .components-panel__body-title,
-    body .digifusion-page-settings-sidebar .components-base-control:where(:not(:last-child)) {
-        margin-bottom: 1rem;
-    }
-    body .digifusion-page-settings-sidebar .block-editor-panel-color-gradient-settings {
-        border: 0;
-        margin-bottom: 24px;
-        padding: 0;
-    }
+body .digifusion-page-settings-sidebar .components-base-control:where(:not(:last-child)),body .digifusion-page-settings-sidebar .components-panel__body.is-opened>.components-panel__body-title{margin-bottom:1rem}body .digifusion-page-settings-sidebar .block-editor-panel-color-gradient-settings{border:0;margin-bottom:24px;padding:0}

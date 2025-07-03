@@ -96,6 +96,20 @@ class DigiFusion_Page_Settings {
 				)
 			);
 
+			register_post_meta(
+				$post_type,
+				'digifusion_disable_padding',
+				array(
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => 'boolean',
+					'default'       => false,
+					'auth_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+
 			// Header settings
 			register_post_meta(
 				$post_type,
@@ -279,152 +293,6 @@ class DigiFusion_Page_Settings {
 			array(),
 			wp_get_theme()->get( 'Version' )
 		);
-	}
-
-	/**
-	 * Check if header is disabled for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return bool
-	 */
-	public static function is_header_disabled( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return false;
-		}
-
-		return (bool) get_post_meta( $post_id, 'digifusion_disable_header', true );
-	}
-
-	/**
-	 * Check if page header is disabled for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return bool
-	 */
-	public static function is_page_header_disabled( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return false;
-		}
-
-		return (bool) get_post_meta( $post_id, 'digifusion_disable_page_header', true );
-	}
-
-	/**
-	 * Check if footer is disabled for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return bool
-	 */
-	public static function is_footer_disabled( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return false;
-		}
-
-		return (bool) get_post_meta( $post_id, 'digifusion_disable_footer', true );
-	}
-
-	/**
-	 * Get header type for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return string
-	 */
-	public static function get_header_type( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return '';
-		}
-
-		$header_type = get_post_meta( $post_id, 'digifusion_header_type', true );
-		return $header_type ? $header_type : '';
-	}
-
-	/**
-	 * Get custom logo for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return int Logo attachment ID
-	 */
-	public static function get_custom_logo( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return 0;
-		}
-
-		return (int) get_post_meta( $post_id, 'digifusion_custom_logo', true );
-	}
-
-	/**
-	 * Get menu colors for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return array
-	 */
-	public static function get_menu_colors( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return array();
-		}
-
-		$colors = get_post_meta( $post_id, 'digifusion_menu_colors', true );
-		return is_array( $colors ) ? $colors : array();
-	}
-
-	/**
-	 * Get custom page title for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return string
-	 */
-	public static function get_custom_page_title( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return '';
-		}
-
-		return get_post_meta( $post_id, 'digifusion_custom_page_title', true );
-	}
-
-	/**
-	 * Get page description for current post
-	 *
-	 * @param int $post_id Post ID. If not provided, uses current post.
-	 * @return string
-	 */
-	public static function get_page_description( $post_id = null ) {
-		if ( ! $post_id ) {
-			$post_id = get_the_ID();
-		}
-
-		if ( ! $post_id ) {
-			return '';
-		}
-
-		return get_post_meta( $post_id, 'digifusion_page_description', true );
 	}
 
 	/**

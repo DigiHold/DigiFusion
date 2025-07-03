@@ -1,13 +1,1 @@
-.digi-account .site-main .container, .digi-payment .site-main .container {
-        padding-top: 4rem;
-        padding-bottom: 4rem;
-    }
-
-/* Mobile Responsive */
-
-@media (max-width: 768px) {
-        .digi-account .site-main .container, .digi-payment .site-main .container {
-            padding-top: 2.5rem;
-            padding-bottom: 2.5rem;
-        }
-}
+.digi-account .site-main .container,.digi-payment .site-main .container{padding-bottom:4rem;padding-top:4rem}@media (max-width:768px){.digi-account .site-main .container,.digi-payment .site-main .container{padding-bottom:2.5rem;padding-top:2.5rem}}

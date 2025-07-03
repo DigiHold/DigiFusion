@@ -111,6 +111,7 @@ Large devices
     /* Page Header */
     .digi-page-header-content {
         flex-direction: column;
+        text-align: center;
     }
 
     .digi-page-header-title,

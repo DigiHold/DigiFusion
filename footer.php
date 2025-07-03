@@ -38,6 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( ! function_exists( 'digifusion_footer' ) || ! digifusion_footer() ) :
 				// Check if footer is disabled
 				$disable_footer = get_the_ID() ? get_post_meta(get_the_ID(), 'digifusion_disable_footer', true) : false;
+				$disable_footer = apply_filters( 'digifusion_show_footer', $disable_footer );
 		
 				if (!$disable_footer) :
 					?>

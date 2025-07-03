@@ -108,6 +108,7 @@
         const [disableHeader, setDisableHeader] = useState(false);
         const [disablePageHeader, setDisablePageHeader] = useState(false);
         const [disableFooter, setDisableFooter] = useState(false);
+        const [disablePadding, setDisablePadding] = useState(false);
         const [headerType, setHeaderType] = useState('');
         const [customLogo, setCustomLogo] = useState(0);
         const [menuColors, setMenuColors] = useState({});
@@ -120,6 +121,7 @@
                 setDisableHeader(postMeta.digifusion_disable_header || false);
                 setDisablePageHeader(postMeta.digifusion_disable_page_header || false);
                 setDisableFooter(postMeta.digifusion_disable_footer || false);
+                setDisablePadding(postMeta.digifusion_disable_padding || false);
                 setHeaderType(postMeta.digifusion_header_type || '');
                 setCustomLogo(postMeta.digifusion_custom_logo || 0);
                 setMenuColors(postMeta.digifusion_menu_colors || {});
@@ -176,6 +178,15 @@
                             onChange={(value) => {
                                 setDisableFooter(value);
                                 updateMeta('digifusion_disable_footer', value);
+                            }}
+                            __nextHasNoMarginBottom={true}
+                        />
+                        <ToggleControl
+                            label={__("Disable Container Spacing", "digifusion")}
+                            checked={disablePadding}
+                            onChange={(value) => {
+                                setDisablePadding(value);
+                                updateMeta('digifusion_disable_padding', value);
                             }}
                             __nextHasNoMarginBottom={true}
                         />

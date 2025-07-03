@@ -79,6 +79,7 @@ class DigiFusion_Page_Metaboxes {
 		$disable_header = get_post_meta( $post->ID, 'digifusion_disable_header', true );
 		$disable_page_header = get_post_meta( $post->ID, 'digifusion_disable_page_header', true );
 		$disable_footer = get_post_meta( $post->ID, 'digifusion_disable_footer', true );
+		$disable_padding = get_post_meta( $post->ID, 'digifusion_disable_padding', true );
 		$header_type = get_post_meta( $post->ID, 'digifusion_header_type', true );
 		$custom_logo = get_post_meta( $post->ID, 'digifusion_custom_logo', true );
 		$menu_colors = get_post_meta( $post->ID, 'digifusion_menu_colors', true );
@@ -123,6 +124,15 @@ class DigiFusion_Page_Metaboxes {
 							<td>
 								<label class="digifusion-toggle-switch">
 									<input type="checkbox" name="digifusion_disable_footer" value="1" <?php checked( $disable_footer, 1 ); ?> />
+									<span class="digifusion-toggle-slider"></span>
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Disable Container Spacing', 'digifusion' ); ?></th>
+							<td>
+								<label class="digifusion-toggle-switch">
+									<input type="checkbox" name="digifusion_disable_padding" value="1" <?php checked( $disable_padding, 1 ); ?> />
 									<span class="digifusion-toggle-slider"></span>
 								</label>
 							</td>
@@ -256,6 +266,7 @@ class DigiFusion_Page_Metaboxes {
 		update_post_meta( $post_id, 'digifusion_disable_header', isset( $_POST['digifusion_disable_header'] ) ? 1 : 0 );
 		update_post_meta( $post_id, 'digifusion_disable_page_header', isset( $_POST['digifusion_disable_page_header'] ) ? 1 : 0 );
 		update_post_meta( $post_id, 'digifusion_disable_footer', isset( $_POST['digifusion_disable_footer'] ) ? 1 : 0 );
+		update_post_meta( $post_id, 'digifusion_disable_padding', isset( $_POST['digifusion_disable_padding'] ) ? 1 : 0 );
 
 		// Save header settings
 		if ( isset( $_POST['digifusion_header_type'] ) ) {

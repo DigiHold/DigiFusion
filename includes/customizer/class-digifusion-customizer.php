@@ -698,7 +698,7 @@ class DigiFusion_Customizer {
 
 		// Body Typography
 		$wp_customize->add_setting(
-			'digifusion_body_typography',
+			'digifusion_body_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -735,7 +735,7 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_body_typography',
+				'digifusion_body_typo',
 				array(
 					'label'   => __( 'Body', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
@@ -745,7 +745,7 @@ class DigiFusion_Customizer {
 
 		// H1 Typography
 		$wp_customize->add_setting(
-			'digifusion_h1_typography',
+			'digifusion_headings1_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -782,9 +782,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h1_typography',
+				'digifusion_headings1_typo',
 				array(
-					'label'   => __( 'H1', 'digifusion' ),
+					'label'   => __( 'Headings 1', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -792,7 +792,7 @@ class DigiFusion_Customizer {
 
 		// H2 Typography
 		$wp_customize->add_setting(
-			'digifusion_h2_typography',
+			'digifusion_headings2_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -829,9 +829,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h2_typography',
+				'digifusion_headings2_typo',
 				array(
-					'label'   => __( 'H2', 'digifusion' ),
+					'label'   => __( 'Headings 2', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -839,7 +839,7 @@ class DigiFusion_Customizer {
 
 		// H3 Typography
 		$wp_customize->add_setting(
-			'digifusion_h3_typography',
+			'digifusion_headings3_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -876,9 +876,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h3_typography',
+				'digifusion_headings3_typo',
 				array(
-					'label'   => __( 'H3', 'digifusion' ),
+					'label'   => __( 'Headings 3', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -886,7 +886,7 @@ class DigiFusion_Customizer {
 
 		// H4 Typography
 		$wp_customize->add_setting(
-			'digifusion_h4_typography',
+			'digifusion_headings4_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -923,9 +923,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h4_typography',
+				'digifusion_headings4_typo',
 				array(
-					'label'   => __( 'H4', 'digifusion' ),
+					'label'   => __( 'Headings 4', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -933,7 +933,7 @@ class DigiFusion_Customizer {
 
 		// H5 Typography
 		$wp_customize->add_setting(
-			'digifusion_h5_typography',
+			'digifusion_headings5_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -970,9 +970,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h5_typography',
+				'digifusion_headings5_typo',
 				array(
-					'label'   => __( 'H5', 'digifusion' ),
+					'label'   => __( 'Headings 5', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -980,7 +980,7 @@ class DigiFusion_Customizer {
 
 		// H6 Typography
 		$wp_customize->add_setting(
-			'digifusion_h6_typography',
+			'digifusion_headings6_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -1017,9 +1017,9 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_h6_typography',
+				'digifusion_headings6_typo',
 				array(
-					'label'   => __( 'H6', 'digifusion' ),
+					'label'   => __( 'Headings 6', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
 				)
 			)
@@ -1027,7 +1027,7 @@ class DigiFusion_Customizer {
 
 		// Menu Typography
 		$wp_customize->add_setting(
-			'digifusion_menu_typography',
+			'digifusion_menu_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -1064,7 +1064,7 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_menu_typography',
+				'digifusion_menu_typo',
 				array(
 					'label'   => __( 'Menu', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',
@@ -1074,7 +1074,7 @@ class DigiFusion_Customizer {
 
 		// Footer Typography
 		$wp_customize->add_setting(
-			'digifusion_footer_typography',
+			'digifusion_footer_typo',
 			array(
 				'default'           => json_encode(
 					array(
@@ -1111,7 +1111,7 @@ class DigiFusion_Customizer {
 		$wp_customize->add_control(
 			new DigiFusion_Typography_Control(
 				$wp_customize,
-				'digifusion_footer_typography',
+				'digifusion_footer_typo',
 				array(
 					'label'   => __( 'Footer', 'digifusion' ),
 					'section' => 'digifusion_typography_settings',

@@ -125,7 +125,7 @@ class DigiFusion_Dynamic_CSS {
 	 * @var array
 	 */
 	private $default_typography = array(
-		'digifusion_body_typography' => array(
+		'digifusion_body_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1, 'tablet' => 1, 'mobile' => 1 ),
 			'fontSizeUnit'       => 'rem',
@@ -138,7 +138,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h1_typography' => array(
+		'digifusion_headings1_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 2.25, 'tablet' => 2.25, 'mobile' => 2.25 ),
 			'fontSizeUnit'       => 'rem',
@@ -151,7 +151,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h2_typography' => array(
+		'digifusion_headings2_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1.5, 'tablet' => 1.5, 'mobile' => 1.5 ),
 			'fontSizeUnit'       => 'rem',
@@ -164,7 +164,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h3_typography' => array(
+		'digifusion_headings3_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1.25, 'tablet' => 1.25, 'mobile' => 1.25 ),
 			'fontSizeUnit'       => 'rem',
@@ -177,7 +177,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h4_typography' => array(
+		'digifusion_headings4_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1.125, 'tablet' => 1.125, 'mobile' => 1.125 ),
 			'fontSizeUnit'       => 'rem',
@@ -190,7 +190,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h5_typography' => array(
+		'digifusion_headings5_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1.125, 'tablet' => 1.125, 'mobile' => 1.125 ),
 			'fontSizeUnit'       => 'rem',
@@ -203,7 +203,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_h6_typography' => array(
+		'digifusion_headings6_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1.125, 'tablet' => 1.125, 'mobile' => 1.125 ),
 			'fontSizeUnit'       => 'rem',
@@ -216,7 +216,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_menu_typography' => array(
+		'digifusion_menu_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => 1, 'tablet' => 1, 'mobile' => 1 ),
 			'fontSizeUnit'       => 'rem',
@@ -229,7 +229,7 @@ class DigiFusion_Dynamic_CSS {
 			'letterSpacing'      => array( 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ),
 			'letterSpacingUnit'  => 'px',
 		),
-		'digifusion_footer_typography' => array(
+		'digifusion_footer_typo' => array(
 			'fontFamily'         => '',
 			'fontSize'           => array( 'desktop' => '', 'tablet' => '', 'mobile' => '' ),
 			'fontSizeUnit'       => 'rem',
@@ -292,6 +292,36 @@ class DigiFusion_Dynamic_CSS {
 
 		// Regenerate CSS on post meta update (for page settings)
 		add_action( 'updated_post_meta', array( $this, 'maybe_regenerate_css_on_meta_update' ), 10, 4 );
+	}
+	
+	/**
+	 * Initialize WordPress Filesystem API.
+	 *
+	 * @return bool True if filesystem is available, false otherwise.
+	 */
+	private function init_filesystem() {
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			
+			// Initialize the filesystem
+			$filesystem_method = get_filesystem_method();
+			if ( 'direct' === $filesystem_method ) {
+				WP_Filesystem();
+			} else {
+				// For non-direct methods, we need credentials
+				$credentials = request_filesystem_credentials( '', $filesystem_method, false, false, array() );
+				if ( false === $credentials ) {
+					return false;
+				}
+				if ( ! WP_Filesystem( $credentials ) ) {
+					return false;
+				}
+			}
+		}
+
+		return ! empty( $wp_filesystem );
 	}
 
 	/**
@@ -549,15 +579,15 @@ class DigiFusion_Dynamic_CSS {
 	 */
 	private function generate_typography_rules() {
 		$typography_mappings = array(
-			'digifusion_body_typography' => 'body',
-			'digifusion_h1_typography' => 'h1, .digi-page-title',
-			'digifusion_h2_typography' => 'h2',
-			'digifusion_h3_typography' => 'h3',
-			'digifusion_h4_typography' => 'h4',
-			'digifusion_h5_typography' => 'h5',
-			'digifusion_h6_typography' => 'h6',
-			'digifusion_menu_typography' => '.digi-header-nav a, .digi-nav-menu a',
-			'digifusion_footer_typography' => '.site-footer',
+			'digifusion_body_typo' => 'body',
+			'digifusion_headings1_typo' => 'h1, .digi-page-title',
+			'digifusion_headings2_typo' => 'h2',
+			'digifusion_headings3_typo' => 'h3',
+			'digifusion_headings4_typo' => 'h4',
+			'digifusion_headings5_typo' => 'h5',
+			'digifusion_headings6_typo' => 'h6',
+			'digifusion_menu_typo' => '.digi-header-nav a, .digi-nav-menu a',
+			'digifusion_footer_typo' => '.site-footer',
 		);
 
 		foreach ( $typography_mappings as $setting_key => $selector ) {
@@ -964,32 +994,27 @@ class DigiFusion_Dynamic_CSS {
 	}
 
 	/**
-	 * Write CSS content to file.
+	 * Write CSS content to file using WordPress Filesystem API.
 	 *
 	 * @param string $css_content CSS content to write.
 	 * @return bool
 	 */
 	private function write_css_file( $css_content ) {
+		// Initialize filesystem
+		if ( ! $this->init_filesystem() ) {
+			return false;
+		}
+		
+		global $wp_filesystem;
+		
 		$file_path = $this->upload_dir . $this->css_file;
 		
 		// Add header comment
 		$header = "/* DigiFusion Dynamic CSS - Generated on " . current_time( 'Y-m-d H:i:s' ) . " */\n";
 		$css_content = $header . $css_content;
 		
-		// Use WordPress filesystem API
-		global $wp_filesystem;
-		
-		if ( ! $wp_filesystem ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			WP_Filesystem();
-		}
-		
-		if ( $wp_filesystem ) {
-			return $wp_filesystem->put_contents( $file_path, $css_content, FS_CHMOD_FILE );
-		}
-		
-		// Fallback to PHP file functions
-		return file_put_contents( $file_path, $css_content ) !== false;
+		// Use WordPress filesystem API only
+		return $wp_filesystem->put_contents( $file_path, $css_content, FS_CHMOD_FILE );
 	}
 
 	/**

@@ -1,159 +1,12 @@
-(() => {
-  // resources/js/customizer/customizer-preview.js
-  (function() {
-    "use strict";
-    const loadedFonts = {};
-    function updateCSS(id, css) {
-      let styleTag = document.getElementById(id);
-      if (!styleTag) {
-        styleTag = document.createElement("style");
-        styleTag.id = id;
-        document.head.appendChild(styleTag);
-      }
-      styleTag.textContent = css;
-    }
-    function parseColorGroup(value) {
-      try {
-        return JSON.parse(value) || {};
-      } catch (e) {
-        console.error("Error parsing color group value:", e);
-        return {};
-      }
-    }
-    function parseTypography(value) {
-      try {
-        return JSON.parse(value) || {};
-      } catch (e) {
-        console.error("Error parsing typography value:", e);
-        return {};
-      }
-    }
-    function generateTypographyCSS(selector, typography) {
-      let css = "";
-      const baseProperties = [];
-      if (typography.fontFamily) {
-        baseProperties.push(`font-family: '${typography.fontFamily}'`);
-        if (!typography.fontFamily.includes(",") && typography.fontFamily !== "system-ui") {
-          loadGoogleFont(typography.fontFamily, typography.fontWeight || "400");
-        }
-      }
-      if (typography.fontWeight) {
-        baseProperties.push(`font-weight: ${typography.fontWeight}`);
-      }
-      if (typography.fontStyle && typography.fontStyle !== "normal") {
-        baseProperties.push(`font-style: ${typography.fontStyle}`);
-      }
-      if (typography.textTransform) {
-        baseProperties.push(`text-transform: ${typography.textTransform}`);
-      }
-      if (typography.textDecoration) {
-        baseProperties.push(`text-decoration: ${typography.textDecoration}`);
-      }
-      if (typography.fontSize && typography.fontSize.desktop !== void 0 && typography.fontSize.desktop !== "") {
-        const fontSizeUnit = typography.fontSizeUnit || "px";
-        baseProperties.push(`font-size: ${typography.fontSize.desktop}${fontSizeUnit}`);
-      }
-      if (typography.lineHeight && typography.lineHeight.desktop !== void 0 && typography.lineHeight.desktop !== "") {
-        const lineHeightUnit = typography.lineHeightUnit || "em";
-        baseProperties.push(`line-height: ${typography.lineHeight.desktop}${lineHeightUnit}`);
-      }
-      if (typography.letterSpacing && typography.letterSpacing.desktop !== void 0 && typography.letterSpacing.desktop !== "") {
-        const letterSpacingUnit = typography.letterSpacingUnit || "px";
-        baseProperties.push(`letter-spacing: ${typography.letterSpacing.desktop}${letterSpacingUnit}`);
-      }
-      if (baseProperties.length > 0) {
-        css += `${selector} { ${baseProperties.join("; ")}; }`;
-      }
-      const tabletProperties = [];
-      if (typography.fontSize && typography.fontSize.tablet !== void 0 && typography.fontSize.tablet !== "") {
-        const fontSizeUnit = typography.fontSizeUnit || "px";
-        tabletProperties.push(`font-size: ${typography.fontSize.tablet}${fontSizeUnit}`);
-      }
-      if (typography.lineHeight && typography.lineHeight.tablet !== void 0 && typography.lineHeight.tablet !== "") {
-        const lineHeightUnit = typography.lineHeightUnit || "em";
-        tabletProperties.push(`line-height: ${typography.lineHeight.tablet}${lineHeightUnit}`);
-      }
-      if (typography.letterSpacing && typography.letterSpacing.tablet !== void 0 && typography.letterSpacing.tablet !== "") {
-        const letterSpacingUnit = typography.letterSpacingUnit || "px";
-        tabletProperties.push(`letter-spacing: ${typography.letterSpacing.tablet}${letterSpacingUnit}`);
-      }
-      if (tabletProperties.length > 0) {
-        css += `@media (max-width: 991px) { ${selector} { ${tabletProperties.join("; ")}; } }`;
-      }
-      const mobileProperties = [];
-      if (typography.fontSize && typography.fontSize.mobile !== void 0 && typography.fontSize.mobile !== "") {
-        const fontSizeUnit = typography.fontSizeUnit || "px";
-        mobileProperties.push(`font-size: ${typography.fontSize.mobile}${fontSizeUnit}`);
-      }
-      if (typography.lineHeight && typography.lineHeight.mobile !== void 0 && typography.lineHeight.mobile !== "") {
-        const lineHeightUnit = typography.lineHeightUnit || "em";
-        mobileProperties.push(`line-height: ${typography.lineHeight.mobile}${lineHeightUnit}`);
-      }
-      if (typography.letterSpacing && typography.letterSpacing.mobile !== void 0 && typography.letterSpacing.mobile !== "") {
-        const letterSpacingUnit = typography.letterSpacingUnit || "px";
-        mobileProperties.push(`letter-spacing: ${typography.letterSpacing.mobile}${letterSpacingUnit}`);
-      }
-      if (mobileProperties.length > 0) {
-        css += `@media (max-width: 719px) { ${selector} { ${mobileProperties.join("; ")}; } }`;
-      }
-      return css;
-    }
-    function loadGoogleFont(fontFamily, fontWeight = "400") {
-      if (!fontFamily || fontFamily.includes(",") || fontFamily === "system-ui") {
-        return;
-      }
-      if (fontWeight === "" || !fontWeight) {
-        fontWeight = "400";
-      }
-      if (!loadedFonts[fontFamily]) {
-        loadedFonts[fontFamily] = /* @__PURE__ */ new Set(["400"]);
-      }
-      loadedFonts[fontFamily].add(fontWeight);
-      const existingLink = document.querySelector(`link[data-font-family="${fontFamily}"]`);
-      if (existingLink) {
-        existingLink.remove();
-      }
-      const weights = Array.from(loadedFonts[fontFamily]).sort((a, b) => parseInt(a) - parseInt(b));
-      const fontUrl = `https://fonts.googleapis.com/css?family=${fontFamily.replace(/ /g, "+")}:${weights.join(",")}&display=swap`;
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = fontUrl;
-      link.setAttribute("data-font-family", fontFamily);
-      document.head.appendChild(link);
-    }
-    wp.customize("digifusion_global_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = ":root {";
-        Object.keys(colors).forEach((colorKey) => {
-          if (colors[colorKey]) {
-            css += `--digi-${colorKey}: ${colors[colorKey]};`;
-          }
-        });
-        css += "}";
-        updateCSS("digifusion-global-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_body_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.background) {
-          css += `
+(()=>{(function(){"use strict";let d={};function r(n,i){let e=document.getElementById(n);e||(e=document.createElement("style"),e.id=n,document.head.appendChild(e)),e.textContent=i}function l(n){try{return JSON.parse(n)||{}}catch(i){return console.error("Error parsing color group value:",i),{}}}function f(n){try{return JSON.parse(n)||{}}catch(i){return console.error("Error parsing typography value:",i),{}}}function a(n,i){let e="",o=[];if(i.fontFamily&&(o.push(`font-family: '${i.fontFamily}'`),!i.fontFamily.includes(",")&&i.fontFamily!=="system-ui"&&g(i.fontFamily,i.fontWeight||"400")),i.fontWeight&&o.push(`font-weight: ${i.fontWeight}`),i.fontStyle&&i.fontStyle!=="normal"&&o.push(`font-style: ${i.fontStyle}`),i.textTransform&&o.push(`text-transform: ${i.textTransform}`),i.textDecoration&&o.push(`text-decoration: ${i.textDecoration}`),i.fontSize&&i.fontSize.desktop!==void 0&&i.fontSize.desktop!==""){let t=i.fontSizeUnit||"px";o.push(`font-size: ${i.fontSize.desktop}${t}`)}if(i.lineHeight&&i.lineHeight.desktop!==void 0&&i.lineHeight.desktop!==""){let t=i.lineHeightUnit||"em";o.push(`line-height: ${i.lineHeight.desktop}${t}`)}if(i.letterSpacing&&i.letterSpacing.desktop!==void 0&&i.letterSpacing.desktop!==""){let t=i.letterSpacingUnit||"px";o.push(`letter-spacing: ${i.letterSpacing.desktop}${t}`)}o.length>0&&(e+=`${n} { ${o.join("; ")}; }`);let s=[];if(i.fontSize&&i.fontSize.tablet!==void 0&&i.fontSize.tablet!==""){let t=i.fontSizeUnit||"px";s.push(`font-size: ${i.fontSize.tablet}${t}`)}if(i.lineHeight&&i.lineHeight.tablet!==void 0&&i.lineHeight.tablet!==""){let t=i.lineHeightUnit||"em";s.push(`line-height: ${i.lineHeight.tablet}${t}`)}if(i.letterSpacing&&i.letterSpacing.tablet!==void 0&&i.letterSpacing.tablet!==""){let t=i.letterSpacingUnit||"px";s.push(`letter-spacing: ${i.letterSpacing.tablet}${t}`)}s.length>0&&(e+=`@media (max-width: 991px) { ${n} { ${s.join("; ")}; } }`);let c=[];if(i.fontSize&&i.fontSize.mobile!==void 0&&i.fontSize.mobile!==""){let t=i.fontSizeUnit||"px";c.push(`font-size: ${i.fontSize.mobile}${t}`)}if(i.lineHeight&&i.lineHeight.mobile!==void 0&&i.lineHeight.mobile!==""){let t=i.lineHeightUnit||"em";c.push(`line-height: ${i.lineHeight.mobile}${t}`)}if(i.letterSpacing&&i.letterSpacing.mobile!==void 0&&i.letterSpacing.mobile!==""){let t=i.letterSpacingUnit||"px";c.push(`letter-spacing: ${i.letterSpacing.mobile}${t}`)}return c.length>0&&(e+=`@media (max-width: 719px) { ${n} { ${c.join("; ")}; } }`),e}function g(n,i="400"){if(!n||n.includes(",")||n==="system-ui")return;(i===""||!i)&&(i="400"),d[n]||(d[n]=new Set(["400"])),d[n].add(i);let e=document.querySelector(`link[data-font-family="${n}"]`);e&&e.remove();let o=Array.from(d[n]).sort((t,m)=>parseInt(t)-parseInt(m)),s=`https://fonts.googleapis.com/css?family=${n.replace(/ /g,"+")}:${o.join(",")}&display=swap`,c=document.createElement("link");c.rel="stylesheet",c.href=s,c.setAttribute("data-font-family",n),document.head.appendChild(c)}wp.customize("digifusion_global_colors",function(n){n.bind(function(i){let e=l(i),o=":root {";Object.keys(e).forEach(s=>{e[s]&&(o+=`--digi-${s}: ${e[s]};`)}),o+="}",r("digifusion-global-colors-style",o)})}),wp.customize("digifusion_body_colors",function(n){n.bind(function(i){let e=l(i),o="";e.background&&(o+=`
                     body {
-                        background-color: ${colors.background};
+                        background-color: ${e.background};
                     }
-                `;
-        }
-        if (colors.text) {
-          css += `
+                `),e.text&&(o+=`
                     body {
-                        color: ${colors.text};
+                        color: ${e.text};
                     }
-                `;
-        }
-        if (colors.headings) {
-          css += `
+                `),e.headings&&(o+=`
                     h1, h2, h3, h4, h5, h6,
                     .digi-post-title,
                     .digi-post-title-single,
@@ -162,19 +15,9 @@
                     .digi-related-title,
                     .digi-related-post-title,
                     .digi-author-name {
-                        color: ${colors.headings};
+                        color: ${e.headings};
                     }
-                `;
-        }
-        updateCSS("digifusion-body-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_button_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.background || colors.text) {
-          css += `
+                `),r("digifusion-body-colors-style",o)})}),wp.customize("digifusion_button_colors",function(n){n.bind(function(i){let e=l(i),o="";(e.background||e.text)&&(o+=`
                     button.digi,
 					.digi-button,
                     input[type="submit"],
@@ -182,17 +25,7 @@
                     .digi-author-social-link,
                     .digi-search-submit,
                     .woocommerce ul.products li.product .button {
-                `;
-          if (colors.background) {
-            css += `background-color: ${colors.background};`;
-          }
-          if (colors.text) {
-            css += `color: ${colors.text};`;
-          }
-          css += "}";
-        }
-        if (colors.background_hover || colors.text_hover) {
-          css += `
+                `,e.background&&(o+=`background-color: ${e.background};`),e.text&&(o+=`color: ${e.text};`),o+="}"),(e.background_hover||e.text_hover)&&(o+=`
                     button.digi:hover,
 					.digi-button:hover,
                     input[type="submit"]:hover,
@@ -200,183 +33,89 @@
                     .digi-author-social-link:hover,
                     .digi-search-submit:hover,
                     .woocommerce ul.products li.product .button:hover {
-                `;
-          if (colors.background_hover) {
-            css += `background-color: ${colors.background_hover};`;
-          }
-          if (colors.text_hover) {
-            css += `color: ${colors.text_hover};`;
-          }
-          css += "}";
-        }
-        updateCSS("digifusion-button-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_link_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.normal) {
-          css += `
+                `,e.background_hover&&(o+=`background-color: ${e.background_hover};`),e.text_hover&&(o+=`color: ${e.text_hover};`),o+="}"),r("digifusion-button-colors-style",o)})}),wp.customize("digifusion_link_colors",function(n){n.bind(function(i){let e=l(i),o="";e.normal&&(o+=`
                     a,
                     .digi-title-link,
                     .digi-comments-link,
                     .digi-author-name {
-                        color: ${colors.normal};
+                        color: ${e.normal};
                     }
-                `;
-        }
-        if (colors.hover) {
-          css += `
+                `),e.hover&&(o+=`
                     a:hover,
                     .digi-title-link:hover,
                     .digi-comments-link:hover,
                     .digi-author-name:hover {
-                        color: ${colors.hover};
+                        color: ${e.hover};
                     }
-                `;
-        }
-        updateCSS("digifusion-link-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_header_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.background) {
-          css += `
+                `),r("digifusion-link-colors-style",o)})}),wp.customize("digifusion_header_colors",function(n){n.bind(function(i){let e=l(i),o="";e.background&&(o+=`
                     .site-header {
-                        background-color: ${colors.background};
+                        background-color: ${e.background};
                     }
-                `;
-        }
-        updateCSS("digifusion-header-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_menu_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.normal) {
-          css += `
+                `),r("digifusion-header-colors-style",o)})}),wp.customize("digifusion_menu_colors",function(n){n.bind(function(i){let e=l(i),o="";e.normal&&(o+=`
                     .digi-header-nav a,
                     .digi-nav-menu a,
                     .digi-site-name {
-                        color: ${colors.normal};
+                        color: ${e.normal};
                     }
-                `;
-        }
-        if (colors.hover) {
-          css += `
+                `),e.hover&&(o+=`
                     .digi-header-nav a:hover,
                     .digi-nav-menu a:hover {
-                        color: ${colors.hover};
+                        color: ${e.hover};
                     }
-                `;
-        }
-        if (colors.current) {
-          css += `
+                `),e.current&&(o+=`
                     .digi-header-nav .current-menu-item > a,
                     .digi-header-nav .current-menu-ancestor > a,
                     .digi-nav-menu .current-menu-item > a,
                     .digi-nav-menu .current-menu-ancestor > a {
-                        color: ${colors.current};
+                        color: ${e.current};
                     }
-                `;
-        }
-        updateCSS("digifusion-menu-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_mobile_icon_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.normal) {
-          css += `
+                `),r("digifusion-menu-colors-style",o)})}),wp.customize("digifusion_mobile_icon_colors",function(n){n.bind(function(i){let e=l(i),o="";e.normal&&(o+=`
                     .digi-menu-bars span {
-                        background-color: ${colors.normal};
+                        background-color: ${e.normal};
                     }
-                `;
-        }
-        if (colors.hover) {
-          css += `
+                `),e.hover&&(o+=`
                     .digi-menu-toggle:hover .digi-menu-bars span {
-                        background-color: ${colors.hover};
+                        background-color: ${e.hover};
                     }
-                `;
-        }
-        if (colors.active) {
-          css += `
+                `),e.active&&(o+=`
                     body.mopen .digi-menu-bars span {
-                        background-color: ${colors.active};
+                        background-color: ${e.active};
                     }
-                `;
-        }
-        updateCSS("digifusion-mobile-icon-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_mobile_submenu_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.background) {
-          css += `
+                `),r("digifusion-mobile-icon-colors-style",o)})}),wp.customize("digifusion_mobile_submenu_colors",function(n){n.bind(function(i){let e=l(i),o="";e.background&&(o+=`
                     @media (max-width: 991px) {
                         .digi-header-nav,
                         .digi-header-nav .sub-menu {
-                            background-color: ${colors.background};
+                            background-color: ${e.background};
                         }
                     }
-                `;
-        }
-        if (colors.normal) {
-          css += `
+                `),e.normal&&(o+=`
                     @media (max-width: 991px) {
                         .digi-header-nav a,
                         .digi-nav-menu a {
-                            color: ${colors.normal};
+                            color: ${e.normal};
                         }
                     }
-                `;
-        }
-        if (colors.hover) {
-          css += `
+                `),e.hover&&(o+=`
                     @media (max-width: 991px) {
                         .digi-header-nav a:hover,
                         .digi-nav-menu a:hover {
-                            color: ${colors.hover};
+                            color: ${e.hover};
                         }
                     }
-                `;
-        }
-        if (colors.active) {
-          css += `
+                `),e.active&&(o+=`
                     @media (max-width: 991px) {
                         .digi-header-nav .current-menu-item > a,
                         .digi-header-nav .current-menu-ancestor > a,
                         .digi-nav-menu .current-menu-item > a,
                         .digi-nav-menu .current-menu-ancestor > a {
-                            color: ${colors.active};
+                            color: ${e.active};
                         }
                     }
-                `;
-        }
-        updateCSS("digifusion-mobile-submenu-colors-style", css);
-      });
-    });
-    wp.customize("digifusion_footer_colors", function(value) {
-      value.bind(function(newval) {
-        const colors = parseColorGroup(newval);
-        let css = "";
-        if (colors.background) {
-          css += `
+                `),r("digifusion-mobile-submenu-colors-style",o)})}),wp.customize("digifusion_footer_colors",function(n){n.bind(function(i){let e=l(i),o="";e.background&&(o+=`
                     .site-footer {
-                        background-color: ${colors.background};
+                        background-color: ${e.background};
                     }
-                `;
-        }
-        if (colors.heading) {
-          css += `
+                `),e.heading&&(o+=`
                     .site-footer h1,
                     .site-footer h2,
                     .site-footer h3,
@@ -384,65 +123,38 @@
                     .site-footer h5,
                     .site-footer h6,
                     .site-footer .widget-title {
-                        color: ${colors.heading};
+                        color: ${e.heading};
                     }
-                `;
-        }
-        if (colors.text) {
-          css += `
+                `),e.text&&(o+=`
                     .site-footer,
                     .site-footer p,
                     .site-footer .widget {
-                        color: ${colors.text};
+                        color: ${e.text};
                     }
-                `;
-        }
-        if (colors.link) {
-          css += `
+                `),e.link&&(o+=`
                     .site-footer a,
                     .site-footer-nav a {
-                        color: ${colors.link};
+                        color: ${e.link};
                     }
-                `;
-        }
-        if (colors.link_hover) {
-          css += `
+                `),e.link_hover&&(o+=`
                     .site-footer a:hover,
                     .site-footer-nav a:hover {
-                        color: ${colors.link_hover};
+                        color: ${e.link_hover};
                     }
-                `;
-        }
-        updateCSS("digifusion-footer-colors-style", css);
-      });
-    });
-    const typographyMappings = {
-      "digifusion_body_typography": "body",
-      "digifusion_h1_typography": "h1, .digi-page-title",
-      "digifusion_h2_typography": "h2",
-      "digifusion_h3_typography": "h3",
-      "digifusion_h4_typography": "h4",
-      "digifusion_h5_typography": "h5",
-      "digifusion_h6_typography": "h6",
-      "digifusion_menu_typography": ".digi-header-nav a, .digi-nav-menu a",
-      "digifusion_footer_typography": ".site-footer"
-    };
-    Object.keys(typographyMappings).forEach(function(settingId) {
-      const selector = typographyMappings[settingId];
-      const styleId = settingId.replace("digifusion_", "digifusion-") + "-style";
-      wp.customize(settingId, function(value) {
-        value.bind(function(newval) {
-          const typography = parseTypography(newval);
-          const css = generateTypographyCSS(selector, typography);
-          updateCSS(styleId, css);
-        });
-      });
-    });
-    wp.customize.bind("ready", function() {
-      const globalColorsValue = wp.customize("digifusion_global_colors");
-      if (globalColorsValue) {
-        globalColorsValue.callbacks.fireWith(globalColorsValue, [globalColorsValue.get()]);
-      }
-    });
-  })();
-})();
+                `),r("digifusion-footer-colors-style",o)})}),wp.customize("digifusion_woocommerce_cart_colors",function(n){n.bind(function(i){let e=l(i),o="";e.icon&&(o+=`
+					.digifusion-cart-icon-link .digifusion-cart-icon-icon svg {
+						fill: ${e.icon};
+					}
+				`),e.counter&&(o+=`
+					.digifusion-cart-count {
+						background-color: ${e.counter};
+					}
+				`),e.counter_text&&(o+=`
+					.digifusion-cart-count {
+						color: ${e.counter_text};
+					}
+				`),e.price&&(o+=`
+					.digifusion-cart-total {
+						color: ${e.price};
+					}
+				`),r("digifusion-woocommerce-cart-colors-style",o)})});let u={digifusion_body_typo:"body",digifusion_headings1_typo:"h1, .digi-page-title",digifusion_headings2_typo:"h2",digifusion_headings3_typo:"h3",digifusion_headings4_typo:"h4",digifusion_headings5_typo:"h5",digifusion_headings6_typo:"h6",digifusion_menu_typo:".digi-header-nav a, .digi-nav-menu a",digifusion_footer_typo:".site-footer"};Object.keys(u).forEach(function(n){let i=u[n],e=n.replace("digifusion_","digifusion-")+"-style";wp.customize(n,function(o){o.bind(function(s){let c=f(s),t=a(i,c);r(e,t)})})}),wp.customize.bind("ready",function(){let n=wp.customize("digifusion_global_colors");n&&n.callbacks.fireWith(n,[n.get()])})})();})();
