@@ -2,7 +2,7 @@
 /**
  * DigiFusion Dynamic CSS Generator
  *
- * Generates and manages dynamic CSS file from customizer settings.
+ * Generates and manages dynamic CSS from customizer settings using wp_add_inline_style().
  *
  * @package DigiFusion
  * @since 1.0.0
@@ -26,35 +26,14 @@ class DigiFusion_Dynamic_CSS {
 	private static $instance = null;
 
 	/**
-	 * Upload directory path
-	 *
-	 * @var string
-	 */
-	private $upload_dir;
-
-	/**
-	 * Upload directory URL
-	 *
-	 * @var string
-	 */
-	private $upload_url;
-
-	/**
-	 * CSS file name
-	 *
-	 * @var string
-	 */
-	private $css_file = 'digifusion-dynamic.css';
-
-	/**
 	 * CSS rules collector
 	 *
 	 * @var array
 	 */
 	private $css_rules = array(
-		'base' => array(),
-		'mobile' => array(),
-		'tablet' => array(),
+		'base'    => array(),
+		'mobile'  => array(),
+		'tablet'  => array(),
 		'desktop' => array(),
 	);
 
@@ -84,8 +63,8 @@ class DigiFusion_Dynamic_CSS {
 		'digifusion_button_colors' => array(
 			'background'       => '#e74c3c',
 			'background_hover' => '#c0392b',
-			'text'            => '#ffffff',
-			'text_hover'      => '#ffffff',
+			'text'             => '#ffffff',
+			'text_hover'       => '#ffffff',
 		),
 		'digifusion_link_colors' => array(
 			'normal' => '#e74c3c',
@@ -106,16 +85,16 @@ class DigiFusion_Dynamic_CSS {
 		),
 		'digifusion_mobile_submenu_colors' => array(
 			'background' => '#ffffff',
-			'normal' => '#2c3e50',
-			'hover'  => '#e74c3c',
-			'active' => '#e74c3c',
+			'normal'     => '#2c3e50',
+			'hover'      => '#e74c3c',
+			'active'     => '#e74c3c',
 		),
 		'digifusion_footer_colors' => array(
-			'background'   => '#ffffff',
-			'heading'      => '#2c3e50',
-			'text'         => '#716c80',
-			'link'         => '#e74c3c',
-			'link_hover'   => '#2c3e50',
+			'background' => '#ffffff',
+			'heading'    => '#2c3e50',
+			'text'       => '#716c80',
+			'link'       => '#e74c3c',
+			'link_hover' => '#2c3e50',
 		),
 	);
 
@@ -248,7 +227,6 @@ class DigiFusion_Dynamic_CSS {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->set_upload_paths();
 		$this->init_hooks();
 	}
 
@@ -266,62 +244,11 @@ class DigiFusion_Dynamic_CSS {
 	}
 
 	/**
-	 * Set upload directory paths.
-	 */
-	private function set_upload_paths() {
-		$upload_dir = wp_upload_dir();
-		$this->upload_dir = $upload_dir['basedir'] . '/digifusion/';
-		$this->upload_url = $upload_dir['baseurl'] . '/digifusion/';
-	}
-
-	/**
 	 * Initialize hooks.
 	 */
 	private function init_hooks() {
-		// Generate CSS on customizer save
-		add_action( 'customize_save_after', array( $this, 'generate_css_file' ) );
-		
-		// Generate CSS on theme activation
-		add_action( 'after_switch_theme', array( $this, 'generate_css_file' ) );
-		
 		// Enqueue dynamic CSS on frontend
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_dynamic_css' ), 20 );
-		
-		// Clean up on theme deactivation
-		add_action( 'switch_theme', array( $this, 'cleanup_css_file' ) );
-
-		// Regenerate CSS on post meta update (for page settings)
-		add_action( 'updated_post_meta', array( $this, 'maybe_regenerate_css_on_meta_update' ), 10, 4 );
-	}
-	
-	/**
-	 * Initialize WordPress Filesystem API.
-	 *
-	 * @return bool True if filesystem is available, false otherwise.
-	 */
-	private function init_filesystem() {
-		global $wp_filesystem;
-
-		if ( ! $wp_filesystem ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			
-			// Initialize the filesystem
-			$filesystem_method = get_filesystem_method();
-			if ( 'direct' === $filesystem_method ) {
-				WP_Filesystem();
-			} else {
-				// For non-direct methods, we need credentials
-				$credentials = request_filesystem_credentials( '', $filesystem_method, false, false, array() );
-				if ( false === $credentials ) {
-					return false;
-				}
-				if ( ! WP_Filesystem( $credentials ) ) {
-					return false;
-				}
-			}
-		}
-
-		return ! empty( $wp_filesystem );
 	}
 
 	/**
@@ -329,9 +256,9 @@ class DigiFusion_Dynamic_CSS {
 	 */
 	private function reset_css_rules() {
 		$this->css_rules = array(
-			'base' => array(),
-			'mobile' => array(),
-			'tablet' => array(),
+			'base'    => array(),
+			'mobile'  => array(),
+			'tablet'  => array(),
 			'desktop' => array(),
 		);
 	}
@@ -366,31 +293,6 @@ class DigiFusion_Dynamic_CSS {
 		 * @param DigiFusion_Dynamic_CSS $this Current instance
 		 */
 		do_action( 'digifusion_dynamic_css_generate', $this );
-	}
-
-	/**
-	 * Maybe regenerate CSS when post meta is updated
-	 *
-	 * @param int    $meta_id    ID of updated metadata entry
-	 * @param int    $post_id    Post ID
-	 * @param string $meta_key   Meta key
-	 * @param mixed  $meta_value Meta value
-	 */
-	public function maybe_regenerate_css_on_meta_update( $meta_id, $post_id, $meta_key, $meta_value ) {
-		// Only care about menu colors meta
-		if ( 'digifusion_menu_colors' !== $meta_key ) {
-			return;
-		}
-
-		// Only regenerate for supported post types
-		$post_type = get_post_type( $post_id );
-		$supported_types = apply_filters( 'digifusion_page_settings_post_types', array( 'post', 'page' ) );
-		if ( ! in_array( $post_type, $supported_types, true ) ) {
-			return;
-		}
-
-		// Always regenerate when menu colors are updated
-		$this->generate_css_file();
 	}
 
 	/**
@@ -506,19 +408,14 @@ class DigiFusion_Dynamic_CSS {
 	}
 
 	/**
-	 * Generate CSS file from customizer settings.
+	 * Generate CSS content from customizer settings.
+	 *
+	 * @return string CSS content
 	 */
-	public function generate_css_file() {
+	public function generate_css_content() {
 		// Check if we have any customizations
 		if ( ! $this->has_customizations() ) {
-			// Remove CSS file if it exists and no customizations
-			$this->cleanup_css_file();
-			return true;
-		}
-
-		// Create upload directory if it doesn't exist
-		if ( ! $this->create_upload_directory() ) {
-			return false;
+			return '';
 		}
 
 		// Reset CSS rules collector
@@ -534,29 +431,8 @@ class DigiFusion_Dynamic_CSS {
 		// Build final CSS content
 		$css_content = $this->build_css_from_rules();
 		
-		// If no CSS content generated, cleanup
-		if ( empty( trim( $css_content ) ) ) {
-			$this->cleanup_css_file();
-			return true;
-		}
-		
-		// Minify CSS
-		$css_content = $this->minify_css( $css_content );
-		
-		// Write CSS to file
-		return $this->write_css_file( $css_content );
-	}
-
-	/**
-	 * Create upload directory if it doesn't exist.
-	 *
-	 * @return bool
-	 */
-	private function create_upload_directory() {
-		if ( ! file_exists( $this->upload_dir ) ) {
-			return wp_mkdir_p( $this->upload_dir );
-		}
-		return true;
+		// Return minified CSS
+		return $this->minify_css( $css_content );
 	}
 
 	/**
@@ -579,15 +455,15 @@ class DigiFusion_Dynamic_CSS {
 	 */
 	private function generate_typography_rules() {
 		$typography_mappings = array(
-			'digifusion_body_typo' => 'body',
+			'digifusion_body_typo'      => 'body',
 			'digifusion_headings1_typo' => 'h1, .digi-page-title',
 			'digifusion_headings2_typo' => 'h2',
 			'digifusion_headings3_typo' => 'h3',
 			'digifusion_headings4_typo' => 'h4',
 			'digifusion_headings5_typo' => 'h5',
 			'digifusion_headings6_typo' => 'h6',
-			'digifusion_menu_typo' => '.digi-header-nav a, .digi-nav-menu a',
-			'digifusion_footer_typo' => '.site-footer',
+			'digifusion_menu_typo'      => '.digi-header-nav a, .digi-nav-menu a',
+			'digifusion_footer_typo'    => '.site-footer',
 		);
 
 		foreach ( $typography_mappings as $setting_key => $selector ) {
@@ -663,14 +539,14 @@ class DigiFusion_Dynamic_CSS {
 	 */
 	private function get_css_property_name( $prop ) {
 		$map = array(
-			'fontFamily' => 'font-family',
-			'fontSize' => 'font-size',
-			'fontWeight' => 'font-weight',
-			'fontStyle' => 'font-style',
-			'textTransform' => 'text-transform',
+			'fontFamily'     => 'font-family',
+			'fontSize'       => 'font-size',
+			'fontWeight'     => 'font-weight',
+			'fontStyle'      => 'font-style',
+			'textTransform'  => 'text-transform',
 			'textDecoration' => 'text-decoration',
-			'lineHeight' => 'line-height',
-			'letterSpacing' => 'letter-spacing',
+			'lineHeight'     => 'line-height',
+			'letterSpacing'  => 'letter-spacing',
 		);
 
 		return isset( $map[ $prop ] ) ? $map[ $prop ] : $prop;
@@ -994,56 +870,15 @@ class DigiFusion_Dynamic_CSS {
 	}
 
 	/**
-	 * Write CSS content to file using WordPress Filesystem API.
-	 *
-	 * @param string $css_content CSS content to write.
-	 * @return bool
-	 */
-	private function write_css_file( $css_content ) {
-		// Initialize filesystem
-		if ( ! $this->init_filesystem() ) {
-			return false;
-		}
-		
-		global $wp_filesystem;
-		
-		$file_path = $this->upload_dir . $this->css_file;
-		
-		// Add header comment
-		$header = "/* DigiFusion Dynamic CSS - Generated on " . current_time( 'Y-m-d H:i:s' ) . " */\n";
-		$css_content = $header . $css_content;
-		
-		// Use WordPress filesystem API only
-		return $wp_filesystem->put_contents( $file_path, $css_content, FS_CHMOD_FILE );
-	}
-
-	/**
-	 * Enqueue dynamic CSS file on frontend.
+	 * Enqueue dynamic CSS using wp_add_inline_style.
 	 */
 	public function enqueue_dynamic_css() {
-		$file_path = $this->upload_dir . $this->css_file;
-		$file_url = $this->upload_url . $this->css_file;
+		// Generate CSS content
+		$css_content = $this->generate_css_content();
 		
-		// Only enqueue if file exists and we have customizations
-		if ( file_exists( $file_path ) && $this->has_customizations() ) {
-			wp_enqueue_style(
-				'digifusion-dynamic-css',
-				$file_url,
-				array( 'digifusion-main' ),
-				filemtime( $file_path )
-			);
-		}
-	}
-
-	/**
-	 * Clean up CSS file and folder.
-	 */
-	public function cleanup_css_file() {
-		$file_path = $this->upload_dir . $this->css_file;
-		
-		// Delete CSS file if it exists
-		if ( file_exists( $file_path ) ) {
-			wp_delete_file( $file_path );
+		// Only add inline style if we have CSS content
+		if ( ! empty( $css_content ) ) {
+			wp_add_inline_style( 'digifusion-main', $css_content );
 		}
 	}
 }

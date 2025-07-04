@@ -320,9 +320,9 @@ class DigiFusion_Breadcrumbs {
 					$name_prop = digifusion_get_schema_property( 'name' );
 					
 					if ( ! empty( $name_prop ) ) {
-						echo '<span ' . wp_kses_post( $name_prop ) . '>' . esc_html( $breadcrumb['title'] ) . '</span>';
+						echo '<span ' . wp_kses_post( $name_prop ) . '>' . wp_kses_post( $breadcrumb['title'] ) . '</span>';
 					} else {
-						echo '<span>' . esc_html( $breadcrumb['title'] ) . '</span>';
+						echo '<span>' . wp_kses_post( $breadcrumb['title'] ) . '</span>';
 					}
 				}
 				

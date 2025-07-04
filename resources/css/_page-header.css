@@ -3,10 +3,11 @@
 }
 
 .digi-page-header-content {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.5rem;
     padding: 2rem 0;
 }
 
@@ -18,7 +19,7 @@
 }
 
 .digi-page-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
     margin: 0;
     color: #fff;
@@ -46,7 +47,6 @@
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
-    width: 50%;
     color: #fff;
 
     p {

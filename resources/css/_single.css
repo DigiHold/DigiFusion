@@ -64,11 +64,17 @@
 
 .digi-single-article {
     max-width: 100%;
-    padding: 50px 0;
+    padding-bottom: 3rem;
 }
 
 .digi-post-content-single {
     padding-bottom: 4rem;
+
+    &::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
 }
 
 .digi-author-box {
@@ -188,7 +194,7 @@
 
 .digi-related-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem;
 }
 

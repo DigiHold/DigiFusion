@@ -26,23 +26,18 @@ if ( ! function_exists( 'digifusion_single_post' ) || ! digifusion_single_post()
 			<article id="post-<?php the_ID(); ?>" <?php post_class('digi-single-article'); ?> <?php echo wp_kses_post( digifusion_get_schema_markup('blog-post') ); ?>>
 				<?php
 				/**
-				* DigiFusion before single post inner.
+				* DigiFusion before single post title.
 				*/
-				do_action( 'digifusion_before_single_post_inner' );
+				do_action( 'digifusion_before_single_post_meta' );
+				?>
 
-				if (has_post_thumbnail()) {
-					echo '<div class="digi-featured-image-single">';
-					the_post_thumbnail('Large', array(
-						'class' => 'digi-post-thumbnail-single',
-						'itemprop' => 'image'
-					));
-					echo '</div>';
-				}
+				<h1 class="digi-post-title-single"><?php echo wp_kses_post( get_the_title() ); ?></h1>
 
+				<?php
 				/**
-				* DigiFusion after single post featured image.
-				*/
-				do_action( 'digifusion_after_single_post_featured_image' );
+				 * DigiFusion after single post title.
+				 */
+				do_action( 'digifusion_after_single_post_meta' );
 				?>
 				
 				<div class="digi-post-meta-single">
@@ -96,6 +91,26 @@ if ( ! function_exists( 'digifusion_single_post' ) || ! digifusion_single_post()
 						</a>
 					</div>
 				</div>
+				<?php
+				/**
+				* DigiFusion before single post inner.
+				*/
+				do_action( 'digifusion_before_single_post_inner' );
+
+				if (has_post_thumbnail()) {
+					echo '<div class="digi-featured-image-single">';
+					the_post_thumbnail('Large', array(
+						'class' => 'digi-post-thumbnail-single',
+						'itemprop' => 'image'
+					));
+					echo '</div>';
+				}
+
+				/**
+				* DigiFusion after single post featured image.
+				*/
+				do_action( 'digifusion_after_single_post_featured_image' );
+				?>
 
 				<?php
 				/**
@@ -301,7 +316,7 @@ if ( ! function_exists( 'digifusion_single_post' ) || ! digifusion_single_post()
 									<h2 class="digi-related-post-title" <?php echo wp_kses_post( digifusion_get_schema_property('headline') ); ?>>
 										<a href="<?php echo esc_url(get_permalink()); ?>" 
 											class="digi-title-link">
-											<?php echo esc_html(get_the_title()); ?>
+											<?php echo wp_kses_post(get_the_title()); ?>
 										</a>
 									</h2>
 									<?php the_excerpt(); ?>

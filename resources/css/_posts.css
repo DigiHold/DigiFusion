@@ -1,15 +1,7 @@
 .digi-posts-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem;
-}
-
-.home,
-.blog,
-.archive {
-    .digi-posts-grid {
-        padding: 50px 0;
-    }
 }
 
 .digi-post-card {
@@ -105,57 +97,4 @@
 .digi-post-action {
     display: flex;
     align-items: center;
-}
-
-/* Pagination */
-.digi-pagination {
-    margin-top: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.digi-pagination span.current,
-.digi-pagination a.page-numbers {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    padding: 0;
-    line-height: 1;
-    border: 1px solid var(--digi-gray);
-    border-radius: 9999px;
-}
-
-.digi-pagination span.current:hover,
-.digi-pagination a.page-numbers:hover {
-    background-color: #eee;
-    color: var(--digi-crimson);
-}
-
-.digi-pagination span.current {
-    background-color: #eee;
-    color: var(--digi-crimson);
-}
-
-.digi-pagination a.prev svg {
-    transform: rotate(180deg);
-}
-
-.digi-pagination .first-page,
-.digi-pagination .last-page {
-    min-width: 112px;
-}
-
-.digi-pagination .first-page,
-.digi-pagination .page-numbers.prev {
-    margin-left: auto;
-}
-
-.digi-pagination .last-page,
-.digi-pagination .page-numbers.next {
-    margin-right: auto;
 }

@@ -94,7 +94,7 @@ do_action( 'digifusion_before_archive_post' );
 		?>
 		
 		<h2 class="digi-post-title" <?php echo wp_kses_post( digifusion_get_schema_property('headline') ); ?>>
-			<a href="<?php echo esc_url( get_the_permalink() ); ?>" class="digi-title-link"><?php echo esc_html( get_the_title() ); ?></a>
+			<a href="<?php echo esc_url( get_the_permalink() ); ?>" class="digi-title-link"><?php echo wp_kses_post( get_the_title() ); ?></a>
 		</h2>
 		
 		<?php

@@ -40,7 +40,9 @@ if ( ! function_exists( 'digifusion_page_header' ) || ! digifusion_page_header()
 					$is_woo = class_exists( 'WooCommerce' );
 					$is_digi = class_exists( 'DigiCommerce' );
 
-					if ( ( $is_woo && is_product() ) || ( $is_digi && is_singular( 'digi_product' ) ) ) {
+					if ( ( $is_woo && is_product() ) ||
+						 ( $is_digi && is_singular( 'digi_product' ) ) || 
+					     ( is_singular( 'post' ) ) ) {
 						$tag = 'span';
 					} else {
 						$tag = 'h1';
@@ -55,13 +57,13 @@ if ( ! function_exists( 'digifusion_page_header' ) || ! digifusion_page_header()
 						<?php
 						if ( $is_woo && ( is_shop() || is_product_category() || is_product_tag() || is_product() ) ) {
 							if ( is_shop() ) {
-								echo esc_html( woocommerce_page_title( false ) );
+								echo wp_kses_post( woocommerce_page_title( false ) );
 							} elseif ( is_product_category() || is_product_tag() ) {
-								echo esc_html( single_term_title( '', false ) );
+								echo wp_kses_post( single_term_title( '', false ) );
 							} elseif ( is_product() ) {
 								$shop_page_id = wc_get_page_id( 'shop' );
 								$shop_title = $shop_page_id ? get_the_title( $shop_page_id ) : __( 'Shop', 'digifusion' );
-								echo esc_html( $shop_title );
+								echo wp_kses_post( $shop_title );
 							}
 						} elseif ( $is_digi && ( is_post_type_archive( 'digi_product' ) || is_singular( 'digi_product' ) ) ) {
 							if ( is_post_type_archive( 'digi_product' ) ) {
@@ -72,7 +74,7 @@ if ( ! function_exists( 'digifusion_page_header' ) || ! digifusion_page_header()
 								echo apply_filters( 'digifusion_digicommerce_single_product_page_title', esc_html( $shop_title ) );
 							}
 						} else if ( ! empty( $custom_title ) ) {
-							echo esc_html( $custom_title );
+							echo wp_kses_post( $custom_title );
 						} else {
 							if ( is_search() ) {
 								esc_html_e( 'Results for : ', 'digifusion' );
@@ -92,10 +94,10 @@ if ( ! function_exists( 'digifusion_page_header' ) || ! digifusion_page_header()
 								?>
 								<?php echo single_cat_title( '', false ); ?>
 								<?php
-							} else if (is_home()) {
+							} else if (is_home() || is_singular( 'post' )) {
 								esc_html_e( 'Blog', 'digifusion' );
 							} else {
-								echo esc_html( get_the_title() );
+								echo wp_kses_post( get_the_title() );
 							}
 						}
 						?>

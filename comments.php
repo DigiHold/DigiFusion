@@ -43,7 +43,7 @@ do_action( 'digifusion_before_comments' );
 				printf(
 					_nx( 'One Comment', '%1$s Comments', get_comments_number(), 'comments title', 'digifusion' ),
 					number_format_i18n( get_comments_number() ),
-					esc_html( get_the_title() )
+					wp_kses_post( get_the_title() )
 				);
 			?>
 		</h2>

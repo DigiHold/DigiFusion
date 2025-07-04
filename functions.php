@@ -5,7 +5,6 @@
  * @link https://developer.wordpress.org/themes/basics/theme-functions/
  *
  * @package DigiFusion
- * @since 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define theme version
 if ( ! defined( 'DIGIFUSION_VERSION' ) ) {
-	define( 'DIGIFUSION_VERSION', '1.0.0' );
+	define( 'DIGIFUSION_VERSION', '1.0.2' );
 }
 
 // Define theme directory path
@@ -351,8 +350,8 @@ add_action( 'wp_head', 'digifusion_pingback_header' );
  * Displays pagination for blog posts with more visual appeal
  */
 function digifusion_the_posts_navigation() {
-	$prev_text = '<svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.66667 5H1M4.33333 1L0.804734 4.5286C0.544369 4.78894 0.544369 5.21106 0.804734 5.4714L4.33333 9" stroke="currentColor" stroke-width="1.06667" stroke-linecap="round"/></svg>' . esc_html__( 'Previous', 'digifusion' );
-	$next_text = esc_html__( 'Next', 'digifusion' ) . '<svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 5H9.66667M6.33333 1L9.86193 4.5286C10.1223 4.78894 10.1223 5.21106 9.86193 5.4714L6.33333 9" stroke="currentColor" stroke-width="1.06667" stroke-linecap="round"/></svg>';
+	$prev_text = '<svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.66667 5H1M4.33333 1L0.804734 4.5286C0.544369 4.78894 0.544369 5.21106 0.804734 5.4714L4.33333 9" stroke="currentColor" stroke-width="1.06667" stroke-linecap="round"/></svg><span class="screen-reader-text">' . esc_html__( 'Previous', 'digifusion' ) . '</span>';
+	$next_text = '<span class="screen-reader-text">' . esc_html__( 'Next', 'digifusion' ) . '</span><svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 5H9.66667M6.33333 1L9.86193 4.5286C10.1223 4.78894 10.1223 5.21106 9.86193 5.4714L6.33333 9" stroke="currentColor" stroke-width="1.06667" stroke-linecap="round"/></svg>';
 
 	$total_pages = $GLOBALS['wp_query']->max_num_pages;
 
@@ -360,10 +359,6 @@ function digifusion_the_posts_navigation() {
 		$current_page = max( 1, get_query_var( 'paged' ) );
 
 		echo '<div class="digi-pagination">';
-
-		if ( 1 === $current_page ) {
-			echo '<div class="first-page"></div>';
-		}
 
 		echo paginate_links(
 			array(

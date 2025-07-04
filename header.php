@@ -103,13 +103,13 @@ if ('transparent' === $header_type) {
 									</a>
 								</div>
 
-								<div class="digi-menu-toggle">
+								<button class="digi-menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Toggle navigation menu', 'digifusion' ); ?>">
 									<div class="digi-menu-bars">
 										<span></span>
 										<span></span>
 										<span></span>
 									</div>
-								</div>
+								</button>
 
 								<?php
 								/**

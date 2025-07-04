@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const nav = document.querySelector('.digi-header-nav');
 
     if (mobile && nav) {
-        mobile.addEventListener('click', function () {
+        mobile.addEventListener('click', function (e) {
+			e.preventDefault();
             if (body.classList.contains('mopen')) {
 				body.classList.remove('mopen');
 
