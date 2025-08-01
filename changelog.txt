@@ -1,5 +1,26 @@
 *** DigiFusion Changelog ***
 
+v1.0.9
+- Minor issues fixed
+
+v1.0.8
+- DigiFusion added as submenu
+
+v1.0.7
+- Screenshot updated
+
+v1.0.6
+- Readme updated
+
+v1.0.5
+- Screenshot updated
+
+v1.0.4
+- Screenshot updated
+
+v1.0.3
+- Small improvements
+
 v1.0.2
 - Many improvements
 

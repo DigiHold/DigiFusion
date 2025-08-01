@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define theme version
 if ( ! defined( 'DIGIFUSION_VERSION' ) ) {
-	define( 'DIGIFUSION_VERSION', '1.0.2' );
+	define( 'DIGIFUSION_VERSION', '1.0.9' );
 }
 
 // Define theme directory path

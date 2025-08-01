@@ -74,24 +74,10 @@ class DigiFusion_Dashboard {
 	 * Add admin menu.
 	 */
 	public function add_admin_menu() {
-		$icon = apply_filters( 'digifusion_menu_icon', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgNTEyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiPjxwb2x5Z29uIHBvaW50cz0iMjUwIDIwMi4yNTM1IDEyNi41Mjc3IDIwMi4yNTM1IDE4OC4wODk2IDAgMCAzMDkuNzQ2NSAxMjMuNDcyMyAzMDkuNzQ2NSA2MS45MTA0IDUxMiAyNTAgMjAyLjI1MzUiIGZpbGw9IiNmZmQ4M2IiLz48L3N2Zz4=' );
-
-		// Add top-level menu page
-		add_menu_page(
-			__( 'DigiFusion Dashboard', 'digifusion' ),
-			__( 'DigiFusion', 'digifusion' ),
-			'manage_options',
-			'digifusion',
-			array( $this, 'render_dashboard_page' ),
-			$icon,
-			30
-		);
-
-		// Add dashboard submenu (same as main menu for consistency)
 		add_submenu_page(
-			'digifusion',
-			__( 'Dashboard', 'digifusion' ),
-			__( 'Dashboard', 'digifusion' ),
+			'themes.php',
+			__( 'DigiFusion', 'digifusion' ),
+			__( 'DigiFusion', 'digifusion' ),
 			'manage_options',
 			'digifusion',
 			array( $this, 'render_dashboard_page' )
@@ -105,9 +91,9 @@ class DigiFusion_Dashboard {
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
 		// Only enqueue on our dashboard pages
-		if ( 'toplevel_page_digifusion' !== $hook_suffix &&
-			'digifusion_page_digifusion-updates' !== $hook_suffix &&
-			'digifusion_page_digifusion-ai' !== $hook_suffix ) {
+		if ( 'appearance_page_digifusion' !== $hook_suffix &&
+			'admin_page_digifusion-updates' !== $hook_suffix &&
+			'admin_page_digifusion-ai' !== $hook_suffix ) {
 			return;
 		}
 
@@ -357,7 +343,7 @@ class DigiFusion_Dashboard {
 	public function footer_text( $text ) {
 		$screen = get_current_screen();
 
-		if ( 'toplevel_page_digifusion' === $screen->id ) {
+		if ( 'appearance_page_digifusion' === $screen->id ) {
 			$text = sprintf(
 				/* translators: %1$s: Plugin review link */
 				esc_html__( 'Please rate %2$sDigiFusion%3$s %4$s&#9733;&#9733;&#9733;&#9733;&#9733;%5$s on %6$sWordPress.org%7$s to help us spread the word.', 'digifusion' ),
@@ -383,7 +369,7 @@ class DigiFusion_Dashboard {
 	public function update_footer( $version ) {
 		$screen = get_current_screen();
 
-		if ( 'toplevel_page_digifusion' === $screen->id ) {
+		if ( 'appearance_page_digifusion' === $screen->id ) {
 			$version .= sprintf( ' | %1$s %2$s', 'DigiFusion', DIGIFUSION_VERSION );
 		}
 

@@ -187,6 +187,6 @@ class DigiFusion_Nav_Walker extends Walker_Nav_Menu {
 			}
 		}
 
-		return '<span role="button" class="nav-arrow" aria-expanded="false" aria-label="' . esc_attr__( 'Menu Toggle', 'digifusion' ) . '">' . $svg . '</span>';
+		return '<button class="nav-arrow" aria-expanded="false" aria-label="' . esc_attr__( 'Menu Toggle', 'digifusion' ) . '">' . $svg . '</button>';
 	}
 }

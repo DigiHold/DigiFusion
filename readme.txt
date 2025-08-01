@@ -3,9 +3,9 @@
 Contributors: digihold
 Tags: custom-header, custom-background, custom-menu, featured-images, threaded-comments, translation-ready, blog, e-commerce, entertainment, portfolio, one-column, two-columns, left-sidebar, right-sidebar, custom-colors, custom-logo, editor-style, rtl-language-support, full-width-template, theme-options, block-styles, wide-blocks
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,7 @@ All images and resources used in this theme are either created by the theme auth
 
 * Icons: Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 * Font: Default system fonts
-* Screenshot background image: Generated using Midjourney AI - https://midjourney.com License - Created with paid Midjourney subscription (commercial use permitted)
+* Screenshot background image: Photo by NASA on StockSnap – https://stocksnap.io/photo/space-galaxy-EGT98NP9TX License: CC0 Public Domain (https://creativecommons.org/publicdomain/zero/1.0/) - GPL compatible
 
 == Theme Support ==
 
