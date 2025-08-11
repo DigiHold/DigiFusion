@@ -124,14 +124,14 @@
                 position: relative;
 
                 &:hover {
-                    color: var(--digi-charcoal);
+                    color: var(--digi-dark);
                     background-color: #f9fafb;
                 }
             }
 
             &.active {
                 a {
-                    color: var(--digi-crimson);
+                    color: var(--digi-primary);
                     background-color: #ffffff;
                     font-weight: 600;
 
@@ -142,7 +142,7 @@
                         left: 0;
                         right: 0;
                         height: 2px;
-                        background-color: var(--digi-crimson);
+                        background-color: var(--digi-primary);
                         border-radius: 2px;
                     }
                 }

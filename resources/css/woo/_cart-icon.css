@@ -17,14 +17,14 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     text-decoration: none;
     border-radius: 0.375rem;
     transition: all 0.2s ease;
     cursor: pointer;
 
     &:hover {
-        color: var(--digi-charcoal);
+        color: var(--digi-dark);
         opacity: 0.8;
     }
 
@@ -53,7 +53,7 @@
     justify-content: center;
     min-width: 1rem;
     height: 1rem;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #ffffff;
     font-size: 0.7rem;
     font-weight: 600;
@@ -126,7 +126,7 @@
         width: 12px;
         height: 12px;
         background-color: #f9fafb;
-        border: 1px solid var(--digi-silver);
+        border: 1px solid var(--digi-neutral);
         border-bottom: none;
         border-right: none;
         transform: rotate(45deg);
@@ -144,14 +144,14 @@
         align-items: center;
         justify-content: space-between;
         padding: 1rem;
-        border-bottom: 1px solid var(--digi-silver);
+        border-bottom: 1px solid var(--digi-neutral);
         background-color: #f9fafb;
 
         .digifusion-mini-cart-title {
             margin: 0;
             font-size: 1rem;
             font-weight: 600;
-            color: var(--digi-charcoal);
+            color: var(--digi-dark);
         }
     }
 
@@ -160,14 +160,14 @@
         max-height: 280px;
         overflow-y: auto;
         scrollbar-width: thin;
-        scrollbar-color: var(--digi-gray) var(--digi-silver);
+        scrollbar-color: var(--digi-gray) var(--digi-neutral);
 
         &::-webkit-scrollbar {
             width: 6px;
         }
 
         &::-webkit-scrollbar-track {
-            background-color: var(--digi-silver);
+            background-color: var(--digi-neutral);
         }
 
         &::-webkit-scrollbar-thumb {
@@ -180,7 +180,7 @@
             align-items: flex-start;
             gap: 0.75rem;
             padding: 1rem;
-            border-bottom: 1px solid var(--digi-silver);
+            border-bottom: 1px solid var(--digi-neutral);
             transition: background-color 0.2s ease;
 
             &:hover {
@@ -222,7 +222,7 @@
 
                 .digifusion-mini-cart-item-name {
                     font-weight: 500;
-                    color: var(--digi-charcoal);
+                    color: var(--digi-dark);
                     margin: 0 0 0.25rem 0;
                     line-height: 1.4;
                     font-size: 0.875rem;
@@ -234,11 +234,11 @@
                         padding: 0;
 
                         &:hover {
-                            color: var(--digi-crimson);
+                            color: var(--digi-primary);
                         }
 
                         &:focus {
-                            outline: 2px solid var(--digi-charcoal);
+                            outline: 2px solid var(--digi-dark);
                             outline-offset: 2px;
                             border-radius: 2px;
                         }
@@ -253,20 +253,20 @@
 
                     .amount {
                         font-weight: 600;
-                        color: var(--digi-charcoal);
+                        color: var(--digi-dark);
                     }
                 }
             }
 
             .digifusion-mini-cart-item-quantity {
                 background-color: #ffffff;
-                border: 1px solid var(--digi-silver);
+                border: 1px solid var(--digi-neutral);
                 width: 50px;
                 min-height: 30px;
                 text-align: center;
                 padding: 0.25rem;
                 border-radius: 0.25rem;
-                color: var(--digi-charcoal);
+                color: var(--digi-dark);
                 flex-shrink: 0;
                 font-size: 0.75rem;
                 transition: border-color 0.2s ease;
@@ -288,7 +288,7 @@
 
                 &:hover {
                     background-color: #fee2e2;
-                    color: var(--digi-crimson);
+                    color: var(--digi-primary);
                 }
             }
         }
@@ -313,8 +313,8 @@
         padding: 0.75rem 1rem;
         font-size: 1rem;
         font-weight: 600;
-        color: var(--digi-charcoal);
-        border-top: 1px solid var(--digi-silver);
+        color: var(--digi-dark);
+        border-top: 1px solid var(--digi-neutral);
         background-color: #f9fafb;
 
         .total-amount {
@@ -342,22 +342,22 @@
 
             &.secondary {
                 background-color: #ffffff;
-                color: var(--digi-charcoal);
+                color: var(--digi-dark);
                 border: 1px solid var(--digi-gray);
 
                 &:hover {
-                    background-color: var(--digi-silver);
-                    color: var(--digi-charcoal);
+                    background-color: var(--digi-neutral);
+                    color: var(--digi-dark);
                     border-color: var(--digi-dark-gray);
                 }
             }
 
             &.primary {
-                background-color: var(--digi-crimson);
+                background-color: var(--digi-primary);
                 color: #ffffff;
 
                 &:hover {
-                    background-color: var(--digi-ruby);
+                    background-color: var(--digi-secondary);
                     color: #ffffff;
                 }
             }

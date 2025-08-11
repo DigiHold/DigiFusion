@@ -51,7 +51,7 @@
                 float: none;
                 margin-left: auto;
                 padding: 0.5rem 1rem;
-                background-color: var(--digi-crimson);
+                background-color: var(--digi-primary);
                 color: #ffffff;
                 text-decoration: none;
                 border-radius: 0.375rem;
@@ -62,7 +62,7 @@
                 cursor: pointer;
 
                 &:hover {
-                    background-color: var(--digi-ruby);
+                    background-color: var(--digi-secondary);
                     color: #ffffff;
                     transform: translateY(-1px);
                 }

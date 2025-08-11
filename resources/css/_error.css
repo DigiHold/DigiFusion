@@ -16,7 +16,7 @@
     justify-content: flex-start;
     width: 200px;
     height: 2px;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     border: none;
     border-radius: 0.125rem;
     margin: 2rem 0;

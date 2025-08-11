@@ -30,12 +30,10 @@ class DigiFusion_Customizer {
 	 * @var array
 	 */
 	private $global_colors = array(
-		'crimson'    => '#e74c3c',
-		'ruby'       => '#c0392b',
-		'yellow'     => '#ffd83b',
-		'slate'      => '#34495e',
-		'charcoal'   => '#2c3e50',
-		'silver'     => '#ecf0f1',
+		'primary'    => '#7091e6',
+		'secondary'  => '#3d52a0',
+		'dark'       => '#27293b',
+		'neutral'    => '#ecf0f1',
 		'dark-gray'  => '#716c80',
 		'gray'       => '#e5e5e5',
 		'green'      => '#16a34a',
@@ -236,33 +234,23 @@ class DigiFusion_Customizer {
 					'alpha'   => false,
 					'colors'  => array(
 						array(
-							'key'     => 'crimson',
-							'label'   => __( 'Crimson', 'digifusion' ),
-							'default' => '#e74c3c',
+							'key'     => 'primary',
+							'label'   => __( 'Primary', 'digifusion' ),
+							'default' => '#7091e6',
 						),
 						array(
-							'key'     => 'ruby',
-							'label'   => __( 'Ruby', 'digifusion' ),
-							'default' => '#c0392b',
+							'key'     => 'secondary',
+							'label'   => __( 'Secondary', 'digifusion' ),
+							'default' => '#3d52a0',
 						),
 						array(
-							'key'     => 'yellow',
-							'label'   => __( 'Yellow', 'digifusion' ),
-							'default' => '#ffd83b',
+							'key'     => 'dark',
+							'label'   => __( 'Dark', 'digifusion' ),
+							'default' => '#27293b',
 						),
 						array(
-							'key'     => 'slate',
-							'label'   => __( 'Slate', 'digifusion' ),
-							'default' => '#34495e',
-						),
-						array(
-							'key'     => 'charcoal',
-							'label'   => __( 'Charcoal', 'digifusion' ),
-							'default' => '#2c3e50',
-						),
-						array(
-							'key'     => 'silver',
-							'label'   => __( 'Silver', 'digifusion' ),
+							'key'     => 'neutral',
+							'label'   => __( 'Neutral', 'digifusion' ),
 							'default' => '#ecf0f1',
 						),
 						array(
@@ -297,7 +285,7 @@ class DigiFusion_Customizer {
 				'default'           => json_encode(
 					array(
 						'background' => '#ffffff',
-						'headings'   => '#2c3e50',
+						'headings'   => '#27293b',
 						'text'       => '#716c80',
 					)
 				),
@@ -323,7 +311,7 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'headings',
 							'label'   => __( 'Headings Color', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'text',
@@ -341,8 +329,8 @@ class DigiFusion_Customizer {
 			array(
 				'default'           => json_encode(
 					array(
-						'background'       => '#e74c3c',
-						'background_hover' => '#c0392b',
+						'background'       => '#7091e6',
+						'background_hover' => '#3d52a0',
 						'text'            => '#ffffff',
 						'text_hover'      => '#ffffff',
 					)
@@ -364,12 +352,12 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'background',
 							'label'   => __( 'Background Color', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'background_hover',
 							'label'   => __( 'Hover Background', 'digifusion' ),
-							'default' => '#c0392b',
+							'default' => '#3d52a0',
 						),
 						array(
 							'key'     => 'text',
@@ -392,8 +380,8 @@ class DigiFusion_Customizer {
 			array(
 				'default'           => json_encode(
 					array(
-						'normal' => '#e74c3c',
-						'hover'  => '#c0392b',
+						'normal' => '#7091e6',
+						'hover'  => '#3d52a0',
 					)
 				),
 				'sanitize_callback' => array( $this, 'sanitize_color_group' ),
@@ -413,12 +401,12 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'normal',
 							'label'   => __( 'Normal', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'hover',
 							'label'   => __( 'Hover', 'digifusion' ),
-							'default' => '#c0392b',
+							'default' => '#3d52a0',
 						),
 					),
 				)
@@ -464,9 +452,9 @@ class DigiFusion_Customizer {
 			array(
 				'default'           => json_encode(
 					array(
-						'normal'  => '#2c3e50',
-						'hover'   => '#e74c3c',
-						'current' => '#e74c3c',
+						'normal'  => '#27293b',
+						'hover'   => '#7091e6',
+						'current' => '#7091e6',
 					)
 				),
 				'sanitize_callback' => array( $this, 'sanitize_color_group' ),
@@ -486,17 +474,17 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'normal',
 							'label'   => __( 'Normal', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'hover',
 							'label'   => __( 'Hover', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'current',
 							'label'   => __( 'Current', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 					),
 				)
@@ -509,9 +497,9 @@ class DigiFusion_Customizer {
 			array(
 				'default'           => json_encode(
 					array(
-						'normal' => '#2c3e50',
-						'hover'  => '#2c3e50',
-						'active' => '#2c3e50',
+						'normal' => '#27293b',
+						'hover'  => '#27293b',
+						'active' => '#27293b',
 					)
 				),
 				'sanitize_callback' => array( $this, 'sanitize_color_group' ),
@@ -531,17 +519,17 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'normal',
 							'label'   => __( 'Normal', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'hover',
 							'label'   => __( 'Hover', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'active',
 							'label'   => __( 'Active', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 					),
 				)
@@ -555,9 +543,9 @@ class DigiFusion_Customizer {
 				'default'           => json_encode(
 					array(
 						'background' => '#ffffff',
-						'normal' => '#2c3e50',
-						'hover'  => '#e74c3c',
-						'active' => '#e74c3c',
+						'normal' => '#27293b',
+						'hover'  => '#7091e6',
+						'active' => '#7091e6',
 					)
 				),
 				'sanitize_callback' => array( $this, 'sanitize_color_group' ),
@@ -582,17 +570,17 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'normal',
 							'label'   => __( 'Links Color', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'hover',
 							'label'   => __( 'Hover Links Color', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'active',
 							'label'   => __( 'Active Links Color', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 					),
 				)
@@ -606,10 +594,10 @@ class DigiFusion_Customizer {
 				'default'           => json_encode(
 					array(
 						'background'   => '#ffffff',
-						'heading'      => '#2c3e50',
+						'heading'      => '#27293b',
 						'text'         => '#716c80',
-						'link'         => '#e74c3c',
-						'link_hover'   => '#2c3e50',
+						'link'         => '#7091e6',
+						'link_hover'   => '#27293b',
 					)
 				),
 				'sanitize_callback' => array( $this, 'sanitize_color_group' ),
@@ -634,7 +622,7 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'heading',
 							'label'   => __( 'Headings Color', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'text',
@@ -644,12 +632,12 @@ class DigiFusion_Customizer {
 						array(
 							'key'     => 'link',
 							'label'   => __( 'Links Color', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'link_hover',
 							'label'   => __( 'Hover Links', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 					),
 				)

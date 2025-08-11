@@ -52,13 +52,13 @@ body.elementor-page .site-main .container {
 }
 
 a {
-    color: var(--digi-crimson);
+    color: var(--digi-primary);
     text-decoration: none;
     transition: all 300ms ease-in-out;
 }
 
 a:hover {
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
 }
 
 .digi-page-content a,
@@ -134,11 +134,11 @@ body .container .alignfull {
 
     a.page-numbers:hover {
         background-color: #eee;
-        color: var(--digi-crimson);
+        color: var(--digi-primary);
     }
 
     span.current {
-        background-color: var(--digi-crimson);
+        background-color: var(--digi-primary);
         color: #fff;
     }
 
@@ -153,7 +153,7 @@ body .container .alignfull {
 
 /* Other */
 pre {
-    background: var(--digi-silver);
+    background: var(--digi-neutral);
     font-family: "Courier 10 Pitch", Courier, monospace;
     margin-bottom: 1.6em;
     overflow: auto;
@@ -182,5 +182,5 @@ table {
 table,
 td,
 th {
-    border: 1px solid var(--digi-silver);
+    border: 1px solid var(--digi-neutral);
 }

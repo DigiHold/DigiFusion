@@ -5,7 +5,7 @@ h4,
 h5,
 h6 {
     margin: 0 0 1rem;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     font-weight: 700;
 }
 
@@ -70,5 +70,5 @@ blockquote {
 b,
 strong {
     font-weight: 700;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
 }

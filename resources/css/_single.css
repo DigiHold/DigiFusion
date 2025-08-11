@@ -17,7 +17,7 @@
 }
 
 .digi-share-text {
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
 }
 
 .digi-share-buttons {
@@ -33,14 +33,14 @@
     width: 50px;
     height: 50px;
     padding: 13px 16px;
-    background-color: var(--digi-silver);
-    color: var(--digi-charcoal);
+    background-color: var(--digi-neutral);
+    color: var(--digi-dark);
     border-radius: 9999px;
     text-decoration: none;
 }
 
 .digi-share-btn:hover {
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
 }
 
@@ -80,7 +80,7 @@
 .digi-author-box {
     position: relative;
     overflow: hidden;
-    background-color: var(--digi-silver);
+    background-color: var(--digi-neutral);
     border-radius: 0.75rem;
     padding: 2.5rem;
 }
@@ -114,13 +114,13 @@
 .digi-author-name {
     font-weight: bold;
     font-size: 1.5rem;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     text-decoration: none;
     margin-bottom: 0.75rem;
 }
 
 .digi-author-name:hover {
-    color: var(--digi-crimson);
+    color: var(--digi-primary);
 }
 
 .digi-author-bio {
@@ -143,14 +143,14 @@
     width: 50px;
     height: 50px;
     padding: 13px 16px;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
     border-radius: 9999px;
     text-decoration: none;
 }
 
 .digi-author-social-link:hover {
-    background-color: var(--digi-ruby);
+    background-color: var(--digi-secondary);
     color: #fff;
 }
 

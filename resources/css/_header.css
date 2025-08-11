@@ -1,7 +1,7 @@
 .site-header {
     position: relative;
     border-bottom-width: 1px;
-    border-bottom-color: var(--digi-silver);
+    border-bottom-color: var(--digi-neutral);
     border-bottom-style: solid;
     z-index: 999;
 
@@ -64,19 +64,19 @@
         display: flex;
         align-items: center;
         position: relative;
-        color: var(--digi-charcoal);
+        color: var(--digi-dark);
         font-size: 1rem;
         padding: 0 0.5rem;
         text-decoration: none;
         transition: all 300ms ease-in-out;
 
         &:hover {
-            color: var(--digi-crimson);
+            color: var(--digi-primary);
         }
     }
 
     .current-menu-item a {
-        color: var(--digi-crimson);
+        color: var(--digi-primary);
     }
 
     li.menu-item-has-children > a {
@@ -134,15 +134,15 @@
             border-radius: 0.2rem;
 
             &:hover {
-                background-color: rgba(255, 237, 237, 0.3);
-                color: var(--digi-charcoal);
+                background-color: rgba(237, 247, 255, 0.3);
+                color: var(--digi-dark);
                 opacity: 1;
             }
         }
 
         .current-menu-item a {
-            background-color: rgba(255, 237, 237, 0.3);
-            color: var(--digi-charcoal);
+            background-color: rgba(237, 247, 255, 0.3);
+            color: var(--digi-dark);
         }
 
         .sub-menu {
@@ -190,7 +190,7 @@
         display: flex;
         height: 2px;
         width: 100%;
-        background-color: var(--digi-charcoal);
+        background-color: var(--digi-dark);
         border-radius: 0.75rem;
         transition: all 300ms ease-in-out;
 
@@ -231,5 +231,5 @@ body.mopen .digi-menu-bars span {
 }
 
 .digi-menu-toggle:hover span {
-    background-color: var(--digi-charcoal);
+    background-color: var(--digi-dark);
 }

@@ -1,11 +1,9 @@
 :root {
     /* Colors */
-    --digi-crimson: #e74c3c;
-    --digi-ruby: #c0392b;
-    --digi-yellow: #ffd83b;
-    --digi-slate: #34495e;
-    --digi-charcoal: #2c3e50;
-    --digi-silver: #ecf0f1;
+    --digi-primary: #7091e6;
+    --digi-secondary: #3d52a0;
+    --digi-dark: #27293b;
+    --digi-neutral: #ecf0f1;
     --digi-dark-gray: #716c80;
     --digi-gray: #e5e5e5;
     --digi-green: #16a34a;

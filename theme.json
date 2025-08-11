@@ -8,33 +8,23 @@
         "color": {
             "palette": [
                 {
-                    "name": "Crimson",
-                    "slug": "crimson",
-                    "color": "#e74c3c"
+                    "name": "Primary",
+                    "slug": "primary",
+                    "color": "#7091e6"
                 },
                 {
-                    "name": "Ruby",
-                    "slug": "ruby",
-                    "color": "#c0392b"
+                    "name": "Secondary",
+                    "slug": "secondary",
+                    "color": "#3d52a0"
                 },
                 {
-                    "name": "Yellow",
-                    "slug": "yellow",
-                    "color": "#ffd83b"
+                    "name": "Dark",
+                    "slug": "dark",
+                    "color": "#27293b"
                 },
                 {
-                    "name": "Charcoal",
-                    "slug": "charcoal",
-                    "color": "#2c3e50"
-                },
-                {
-                    "name": "Slate",
-                    "slug": "slate",
-                    "color": "#34495e"
-                },
-                {
-                    "name": "Silver",
-                    "slug": "silver",
+                    "name": "Neutral",
+                    "slug": "neutral",
                     "color": "#ecf0f1"
                 }
             ]

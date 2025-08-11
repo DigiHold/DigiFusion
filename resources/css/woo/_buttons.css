@@ -32,12 +32,12 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
     padding: 0.8rem 1.5rem;
 
     &:hover {
-        background-color: var(--digi-ruby);
+        background-color: var(--digi-secondary);
         color: #fff;
     }
 }
@@ -252,11 +252,11 @@
     )
     .woocommerce
     input.button.alt:disabled[disabled]:hover {
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
 
     &:hover {
-        background-color: var(--digi-ruby);
+        background-color: var(--digi-secondary);
         color: #fff;
     }
 }
@@ -355,7 +355,7 @@
     color: #fff;
 
     &:hover {
-        background-color: var(--digi-ruby);
+        background-color: var(--digi-secondary);
         color: #fff;
     }
 }

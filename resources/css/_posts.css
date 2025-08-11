@@ -65,19 +65,19 @@
 .digi-meta-icon {
     width: 1rem;
     height: 1rem;
-    fill: var(--digi-crimson);
+    fill: var(--digi-primary);
 }
 
 .digi-comments-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     text-decoration: none;
 }
 
 .digi-comments-link:hover {
-    color: var(--digi-crimson);
+    color: var(--digi-primary);
 }
 
 .digi-post-title {
@@ -86,12 +86,12 @@
 }
 
 .digi-title-link {
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     text-decoration: none;
 }
 
 .digi-title-link:hover {
-    color: var(--digi-crimson);
+    color: var(--digi-primary);
 }
 
 .digi-post-action {

@@ -326,15 +326,6 @@ class DigiFusion_Dashboard {
 	}
 
 	/**
-	 * Get menu icon for admin menu.
-	 *
-	 * @return string SVG icon.
-	 */
-	public function get_menu_icon() {
-		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 512" width="24" height="24"><polygon points="250 202.2535 126.5277 202.2535 188.0896 0 0 309.7465 123.4723 309.7465 61.9104 512 250 202.2535" fill="#ffd83b"/></svg>';
-	}
-
-	/**
 	 * Customize admin footer text
 	 *
 	 * @param string $text Footer text.

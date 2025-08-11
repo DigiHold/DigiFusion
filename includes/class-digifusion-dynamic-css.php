@@ -44,12 +44,10 @@ class DigiFusion_Dynamic_CSS {
 	 */
 	private $default_colors = array(
 		'digifusion_global_colors' => array(
-			'crimson'    => '#e74c3c',
-			'ruby'       => '#c0392b',
-			'yellow'     => '#ffd83b',
-			'slate'      => '#34495e',
-			'charcoal'   => '#2c3e50',
-			'silver'     => '#ecf0f1',
+			'primary'    => '#7091e6',
+			'secondary'  => '#3d52a0',
+			'dark'       => '#27293b',
+			'neutral'    => '#ecf0f1',
 			'dark-gray'  => '#716c80',
 			'gray'       => '#e5e5e5',
 			'green'      => '#16a34a',
@@ -57,44 +55,44 @@ class DigiFusion_Dynamic_CSS {
 		),
 		'digifusion_body_colors' => array(
 			'background' => '#ffffff',
-			'headings'   => '#2c3e50',
+			'headings'   => '#27293b',
 			'text'       => '#716c80',
 		),
 		'digifusion_button_colors' => array(
-			'background'       => '#e74c3c',
-			'background_hover' => '#c0392b',
+			'background'       => '#7091e6',
+			'background_hover' => '#3d52a0',
 			'text'             => '#ffffff',
 			'text_hover'       => '#ffffff',
 		),
 		'digifusion_link_colors' => array(
-			'normal' => '#e74c3c',
-			'hover'  => '#c0392b',
+			'normal' => '#7091e6',
+			'hover'  => '#3d52a0',
 		),
 		'digifusion_header_colors' => array(
 			'background' => '#ffffff',
 		),
 		'digifusion_menu_colors' => array(
-			'normal'  => '#2c3e50',
-			'hover'   => '#e74c3c',
-			'current' => '#e74c3c',
+			'normal'  => '#27293b',
+			'hover'   => '#7091e6',
+			'current' => '#7091e6',
 		),
 		'digifusion_mobile_icon_colors' => array(
-			'normal' => '#2c3e50',
-			'hover'  => '#2c3e50',
-			'active' => '#2c3e50',
+			'normal' => '#27293b',
+			'hover'  => '#27293b',
+			'active' => '#27293b',
 		),
 		'digifusion_mobile_submenu_colors' => array(
 			'background' => '#ffffff',
-			'normal'     => '#2c3e50',
-			'hover'      => '#e74c3c',
-			'active'     => '#e74c3c',
+			'normal'     => '#27293b',
+			'hover'      => '#7091e6',
+			'active'     => '#7091e6',
 		),
 		'digifusion_footer_colors' => array(
 			'background' => '#ffffff',
-			'heading'    => '#2c3e50',
+			'heading'    => '#27293b',
 			'text'       => '#716c80',
-			'link'       => '#e74c3c',
-			'link_hover' => '#2c3e50',
+			'link'       => '#7091e6',
+			'link_hover' => '#27293b',
 		),
 	);
 

@@ -1,7 +1,7 @@
 .site-footer {
     position: relative;
     border-top-width: 1px;
-    border-top-color: var(--digi-silver);
+    border-top-color: var(--digi-neutral);
     border-top-style: solid;
     padding-top: 2rem;
     padding-bottom: 2rem;
@@ -67,10 +67,10 @@
     }
 
     a {
-        color: var(--digi-charcoal);
+        color: var(--digi-dark);
 
         &:hover {
-            color: var(--digi-crimson);
+            color: var(--digi-primary);
         }
     }
 }

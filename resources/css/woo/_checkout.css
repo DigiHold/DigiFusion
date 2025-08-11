@@ -102,7 +102,7 @@ label.woocommerce-form__label-for-checkbox {
 #add_payment_method #payment,
 .woocommerce-cart #payment,
 .woocommerce-checkout #payment {
-    background-color: var(--digi-silver);
+    background-color: var(--digi-neutral);
 }
 
 #add_payment_method #payment div.payment_box,

@@ -270,8 +270,8 @@ class DigiFusion_WooCommerce {
 			array(
 				'default'           => json_encode(
 					array(
-						'icon'         => '#2c3e50',
-						'counter'      => '#e74c3c',
+						'icon'         => '#27293b',
+						'counter'      => '#7091e6',
 						'counter_text' => '#ffffff',
 						'price'        => '#716c80',
 					)
@@ -294,12 +294,12 @@ class DigiFusion_WooCommerce {
 						array(
 							'key'     => 'icon',
 							'label'   => __( 'Cart Icon', 'digifusion' ),
-							'default' => '#2c3e50',
+							'default' => '#27293b',
 						),
 						array(
 							'key'     => 'counter',
 							'label'   => __( 'Counter Background', 'digifusion' ),
-							'default' => '#e74c3c',
+							'default' => '#7091e6',
 						),
 						array(
 							'key'     => 'counter_text',
@@ -372,8 +372,8 @@ class DigiFusion_WooCommerce {
 		
 		// Default colors
 		$defaults = array(
-			'icon'         => '#2c3e50',
-			'counter'      => '#e74c3c',
+			'icon'         => '#27293b',
+			'counter'      => '#7091e6',
 			'counter_text' => '#ffffff',
 			'price'        => '#716c80',
 		);
@@ -494,8 +494,8 @@ class DigiFusion_WooCommerce {
 		$show_price = get_theme_mod( 'digifusion_woocommerce_cart_price', true );
 		$show_mini_cart = get_theme_mod( 'digifusion_woocommerce_mini_cart', true );
 		$colors = json_decode( get_theme_mod( 'digifusion_woocommerce_cart_colors', json_encode( array(
-			'icon'         => '#2c3e50',
-			'counter'      => '#e74c3c',
+			'icon'         => '#27293b',
+			'counter'      => '#7091e6',
 			'counter_text' => '#ffffff',
 			'price'        => '#716c80',
 		) ) ), true );

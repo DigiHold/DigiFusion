@@ -56,16 +56,16 @@ body.rtl .digifusion-admin-wrap {
         transition: all 0.2s ease;
 
         &:hover {
-            color: #e74c3c;
-            background-color: rgba(234, 102, 102, 0.05);
+            color: #7091e6;
+            background-color: rgba(102, 166, 234, 0.05);
             outline: none;
             box-shadow: none;
         }
 
         &.active {
             color: #fff;
-            background-color: #e74c3c;
-            box-shadow: 0 0.1875rem 0.375rem rgba(234, 102, 102, 0.25);
+            background-color: #7091e6;
+            box-shadow: 0 0.1875rem 0.375rem rgba(102, 166, 234, 0.25);
         }
     }
 }
@@ -112,8 +112,8 @@ body.rtl .digifusion-admin-wrap {
     border-bottom: 0.0625rem solid #f0f0f0;
     background: linear-gradient(
         to right,
-        rgba(234, 102, 102, 0.03),
-        rgba(234, 102, 102, 0)
+        rgba(102, 166, 234, 0.03),
+        rgba(102, 166, 234, 0)
     );
 
     h2 {
@@ -168,8 +168,8 @@ body.rtl .digifusion-admin-wrap {
     overflow: hidden;
 
     &:hover {
-        border-color: #e74c3c;
-        box-shadow: 0 0.5rem 1.5rem rgba(234, 102, 102, 0.15);
+        border-color: #7091e6;
+        box-shadow: 0 0.5rem 1.5rem rgba(102, 166, 234, 0.15);
         transform: translateY(-0.125rem);
         color: inherit;
     }
@@ -181,10 +181,10 @@ body.rtl .digifusion-admin-wrap {
     justify-content: center;
     width: 3rem;
     height: 3rem;
-    background: rgba(234, 102, 102, 0.1);
+    background: rgba(102, 166, 234, 0.1);
     border-radius: 0.75rem;
     flex-shrink: 0;
-    color: #e74c3c;
+    color: #7091e6;
     transition: all 0.3s ease;
 
     svg {
@@ -195,7 +195,7 @@ body.rtl .digifusion-admin-wrap {
 }
 
 .digifusion-action-card:hover .digifusion-action-icon {
-    background: #e74c3c;
+    background: #7091e6;
     color: white;
     transform: scale(1.05);
 }
@@ -232,7 +232,7 @@ body.rtl .digifusion-admin-wrap {
     border-radius: 0.5rem;
 
     &:hover {
-        background-color: rgba(234, 102, 102, 0.03);
+        background-color: rgba(102, 166, 234, 0.03);
         transform: translateX(0.25rem);
     }
 
@@ -250,9 +250,9 @@ body.rtl .digifusion-admin-wrap {
     font-size: 0.875rem;
     font-weight: 700;
     color: #fff;
-    background-color: #e74c3c;
+    background-color: #7091e6;
     border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(234, 102, 102, 0.25);
+    box-shadow: 0 0.125rem 0.25rem rgba(102, 166, 234, 0.25);
     flex-shrink: 0;
 }
 
@@ -278,14 +278,14 @@ body.rtl .digifusion-admin-wrap {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    color: #e74c3c;
+    color: #7091e6;
     text-decoration: none;
     font-weight: 500;
     font-size: 0.875rem;
     transition: all 0.2s ease;
 
     &:hover {
-        color: #c0392b;
+        color: #3d52a0;
         transform: translateX(0.125rem);
 
         svg {
@@ -317,7 +317,7 @@ body.rtl .digifusion-admin-wrap {
     &:hover {
         transform: translateY(-0.125rem);
         box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-        border-color: #e74c3c;
+        border-color: #7091e6;
         color: inherit;
     }
 }
@@ -337,14 +337,14 @@ body.rtl .digifusion-admin-wrap {
 }
 
 .digifusion-resource-icon {
-    background: rgba(231, 77, 60, 0.1);
+    background: rgba(60, 145, 231, 0.1);
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #e74c3c;
+    color: #7091e6;
     flex-shrink: 0;
 
     svg {
@@ -452,9 +452,9 @@ body.rtl .digifusion-admin-wrap {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        background-color: #e74c3c;
+        background-color: #7091e6;
         color: #fff;
-        border-color: #e74c3c;
+        border-color: #7091e6;
         line-height: 1;
         font-weight: 500;
         box-shadow: none;
@@ -466,15 +466,15 @@ body.rtl .digifusion-admin-wrap {
         transition: all 0.3s ease;
 
         &[disabled] {
-            background-color: #e74c3c !important;
-            border-color: #e74c3c !important;
+            background-color: #7091e6 !important;
+            border-color: #7091e6 !important;
             color: #fff !important;
         }
 
         &:hover,
         &:focus {
-            background-color: #c0392b;
-            border-color: #c0392b;
+            background-color: #3d52a0;
+            border-color: #3d52a0;
             color: #fff;
             transform: translateX(0.125rem);
             box-shadow: none;
@@ -497,7 +497,7 @@ body.rtl .digifusion-admin-wrap {
 }
 
 .digifusion-link {
-    color: #e74c3c;
+    color: #7091e6;
     text-decoration: none;
     font-weight: 500;
     font-size: 0.875rem;
@@ -516,7 +516,7 @@ body.rtl .digifusion-admin-wrap {
     }
 
     &:hover {
-        color: #c0392b;
+        color: #3d52a0;
         transform: translateX(0.125rem);
 
         svg {
@@ -537,7 +537,7 @@ body.rtl .digifusion-admin-wrap {
 }
 
 .digifusion-coming-soon-badge {
-    background: #e74c3c;
+    background: #7091e6;
     color: white;
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;

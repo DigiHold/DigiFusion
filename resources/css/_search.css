@@ -8,12 +8,12 @@
     padding-bottom: 1rem;
     margin-bottom: 1rem;
     border-bottom: 1px solid #ccc;
-    color: var(--digi-charcoal);
+    color: var(--digi-dark);
     text-decoration: none;
 }
 
 .digi-search-item:hover {
-    color: var(--digi-crimson);
+    color: var(--digi-primary);
 }
 
 .digi-no-results {
@@ -39,7 +39,7 @@
 
 .digi-search-submit {
     padding: 0.75rem 1rem;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
     border: none;
     border-radius: 0.25rem;
@@ -47,5 +47,5 @@
 }
 
 .digi-search-submit:hover {
-    background-color: var(--digi-ruby);
+    background-color: var(--digi-secondary);
 }

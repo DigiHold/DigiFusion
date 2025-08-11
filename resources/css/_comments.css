@@ -18,7 +18,7 @@
         .comment-body {
             padding: 24px;
             position: relative;
-            background: var(--digi-silver);
+            background: var(--digi-neutral);
             border-radius: 8px;
 
             .comment-meta {
@@ -41,15 +41,15 @@
                     .fn {
                         font-weight: 600;
                         font-size: 16px;
-                        color: var(--digi-charcoal);
+                        color: var(--digi-dark);
 
                         a {
-                            color: var(--digi-charcoal);
+                            color: var(--digi-dark);
                             text-decoration: none;
                             transition: color 0.2s ease;
 
                             &:hover {
-                                color: var(--digi-crimson);
+                                color: var(--digi-primary);
                             }
                         }
                     }
@@ -74,7 +74,7 @@
                         transition: color 0.2s ease;
 
                         &:hover {
-                            color: var(--digi-crimson);
+                            color: var(--digi-primary);
                         }
                     }
 
@@ -88,7 +88,7 @@
                             transition: all 0.2s ease;
 
                             &:hover {
-                                background: var(--digi-crimson);
+                                background: var(--digi-primary);
                                 color: white;
                             }
                         }
@@ -98,7 +98,7 @@
 
             .comment-content {
                 line-height: 1.7;
-                color: var(--digi-slate);
+                color: var(--digi-dark-gray);
                 margin-bottom: 16px;
 
                 p {
@@ -117,7 +117,7 @@
                     display: inline-flex;
                     align-items: center;
                     gap: 6px;
-                    background: var(--digi-crimson);
+                    background: var(--digi-primary);
                     color: white;
                     padding: 8px 16px;
                     border-radius: 20px;
@@ -125,11 +125,11 @@
                     font-size: 13px;
                     font-weight: 500;
                     transition: all 0.2s ease;
-                    border: 2px solid var(--digi-crimson);
+                    border: 2px solid var(--digi-primary);
 
                     &:hover {
                         background: transparent;
-                        color: var(--digi-crimson);
+                        color: var(--digi-primary);
                         transform: translateY(-1px);
                     }
 

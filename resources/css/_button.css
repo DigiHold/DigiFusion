@@ -8,7 +8,7 @@ input[type="submit"] {
     border-radius: 0.25rem;
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
-    background-color: var(--digi-crimson);
+    background-color: var(--digi-primary);
     color: #fff;
     border: 0;
     overflow: hidden;
@@ -17,7 +17,7 @@ input[type="submit"] {
     cursor: pointer;
 
     &:hover {
-        background-color: var(--digi-ruby);
+        background-color: var(--digi-secondary);
         color: #fff;
     }
 

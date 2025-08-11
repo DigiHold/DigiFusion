@@ -72,12 +72,12 @@ p.lost_password {
 
                     &:hover {
                         background-color: #f9fafb;
-                        color: var(--digi-charcoal);
+                        color: var(--digi-dark);
                         padding-left: 1.75rem;
                     }
 
                     &:focus {
-                        outline: 2px solid var(--digi-crimson);
+                        outline: 2px solid var(--digi-primary);
                         outline-offset: -2px;
                         background-color: #f9fafb;
                     }
@@ -86,7 +86,7 @@ p.lost_password {
                 &.is-active {
                     a {
                         background-color: #fef2f2;
-                        color: var(--digi-crimson);
+                        color: var(--digi-primary);
                         font-weight: 600;
 
                         &::before {
@@ -96,7 +96,7 @@ p.lost_password {
                             top: 0;
                             bottom: 0;
                             width: 3px;
-                            background-color: var(--digi-crimson);
+                            background-color: var(--digi-primary);
                             border-radius: 0 2px 2px 0;
                         }
                     }
@@ -120,15 +120,15 @@ p.lost_password {
             &:first-of-type {
                 margin-top: 0;
                 font-size: 1.125rem;
-                color: var(--digi-charcoal);
+                color: var(--digi-dark);
 
                 strong {
-                    color: var(--digi-crimson);
+                    color: var(--digi-primary);
                 }
             }
 
             a {
-                color: var(--digi-crimson);
+                color: var(--digi-primary);
                 text-decoration: none;
                 font-weight: 500;
 
@@ -185,7 +185,7 @@ p.lost_password {
                 margin: 0;
                 font-size: 1.125rem;
                 font-weight: 600;
-                color: var(--digi-charcoal);
+                color: var(--digi-dark);
             }
 
             .edit {
@@ -243,7 +243,7 @@ p.lost_password {
         legend {
             padding: 0 0.75rem;
             font-weight: 600;
-            color: var(--digi-charcoal);
+            color: var(--digi-dark);
             background-color: #ffffff;
             border-radius: 0.25rem;
         }
